@@ -19,7 +19,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (Categories = "InputTag"))
 	FGameplayTag InputTag = FGameplayTag::EmptyTag;
-
 };
 
 

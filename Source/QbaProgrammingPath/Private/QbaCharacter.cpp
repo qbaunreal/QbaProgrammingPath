@@ -11,51 +11,28 @@
 AQbaCharacter::AQbaCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
-
-	/*TObjectPtr<UQbaAssetManager> AssetManager = Cast<UQbaAssetManager>(GEngine->AssetManager);
-	if (AssetManager)
-	{
-		LocalGameplayTags = AssetManager->GetTags();
-	}*/
-	
 }
 
 void AQbaCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 void AQbaCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	/*if (LocalGameplayTags.InputTag_Move.IsValid())
-	{
-		UE_LOG(LogTemp, Error, TEXT("Is valid"));
-	}*/
 }
 
 void AQbaCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
-	UQbaEnhancedInputComponent* EnhancedInputComponent = Cast<UQbaEnhancedInputComponent>(PlayerInputComponent);
+	TObjectPtr<UQbaEnhancedInputComponent> EnhancedInputComponent = Cast<UQbaEnhancedInputComponent>(PlayerInputComponent);
+	TObjectPtr<UQbaAssetManager> AssetManager = Cast<UQbaAssetManager>(GEngine->AssetManager);
 
-	if(!EnhancedInputComponent) return;
-	UE_LOG(LogTemp, Error, TEXT("aaaa"));
+	check(EnhancedInputComponent);
+	check(InputConfig);
+	check (AssetManager);
 
-	if(!InputConfig) return;
-	UE_LOG(LogTemp, Error, TEXT("BBB"));
-
-	auto AssetManager = Cast<UQbaAssetManager>(GEngine->AssetManager);
-	if (!AssetManager) return;
 	FQbaGameplayTags GameplayTags = AssetManager->GetTags();
-
-	UE_LOG(LogTemp, Error, TEXT("CharacterTag: %s"), *GameplayTags.InputTag_Move.GetTagName().ToString());
-	if (GameplayTags.InputTag_Move.IsValid())
-	{
-		UE_LOG(LogTemp, Error, TEXT("Is valid"));
-	}
-
-	
 
 	EnhancedInputComponent->BindActionByTag(InputConfig, GameplayTags.InputTag_Move, ETriggerEvent::Triggered, this, &AQbaCharacter::Input_Move);
 	EnhancedInputComponent->BindActionByTag(InputConfig, GameplayTags.InputTag_Look_Mouse, ETriggerEvent::Triggered, this, &AQbaCharacter::Input_Look);
