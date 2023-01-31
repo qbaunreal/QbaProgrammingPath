@@ -6,7 +6,8 @@
 #include "GameplayTagsManager.h"
 //#include "QbaGameplayTags.generated.h"
 
-struct FQbaGameplayTags
+
+struct FQbaInputTags
 {
 
 public:
@@ -18,17 +19,41 @@ public:
 	FGameplayTag InputTag_Aim;
 	FGameplayTag InputTag_AbilityWheel;
 
-	FORCEINLINE static const FQbaGameplayTags& Get() { return GameplayTags; }
-	void AddTags();
+	FORCEINLINE static const FQbaInputTags& Get() { return InputTags; }
+	void AddInputTags();
 
 
 private:
-	//Q: I need to do a little more reasearch. It's first time I'm using it and not sure 100% how it works
-	static FQbaGameplayTags GameplayTags;
+	//Q: I need to do a little more reasearch. I have never declared a struct like that and im' not 100% sure how it works. I was only using the UStruct(as below)
+	static FQbaInputTags InputTags;
 };
 
+struct FQbaAbilityTags
+{
+
+public:
+	FGameplayTag AbilityTag_Movement;
+	FGameplayTag AbilityTag_CameraMouse;
+	FGameplayTag AbilityTag_CameraGamepad;
+	FGameplayTag AbilityTag_Jump;
+	FGameplayTag AbilityTag_Sprint;
+	FGameplayTag AbilityTag_Dash;
+	FGameplayTag AbilityTag_Telekinesis;
+
+	// etc. add tags once I know what they'll do, general scope of ability
+
+	FORCEINLINE static const FQbaAbilityTags& Get() { return AbilityTags; }
+	void AddAbilityTags();
+
+private:
+	static FQbaAbilityTags AbilityTags;
+};
+
+
+//Q: And here is the other method, UStruct base. Not sure which one is better
+
 //USTRUCT()
-//struct FQbaGameplayTags
+//struct FQbaInputTags
 //{
 //	GENERATED_USTRUCT_BODY()
 //

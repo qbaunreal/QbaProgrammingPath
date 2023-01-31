@@ -3,7 +3,6 @@
 
 #include "CoreMinimal.h"
 #include "EnhancedInputComponent.h"
-#include "InputAction.h"
 #include "QbaInputConfig.h"
 #include "GameplayTagContainer.h"
 #include "QbaEnhancedInputComponent.generated.h"
@@ -30,14 +29,9 @@ void UQbaEnhancedInputComponent::BindActionByTag(const UQbaInputConfig* InputCon
 {
 	check(InputConfig);
 	const UInputAction* IA = InputConfig->FindInputActionForTag(InputTag);
-	/*UE_LOG(LogTemp, Error, TEXT("InputConfig: %s"), *InputConfig->GetName());
-	UE_LOG(LogTemp, Error, TEXT("InputTag: %s"), *InputTag.ToString());*/
 
-	if (IA)
-	{
-		//Q: I would like to learn more about function binding. How do the delegates work etc. Basically how to create a binding from scratch
-		BindAction(IA, TriggerEvent, Object, Func);
-
-		UE_LOG(LogTemp, Warning, TEXT("Binding: %s"), *IA->GetName());
-	}
+	if (!IA) return;
+	
+	//Q: I would like to learn more about function binding. How do the delegates work etc. Basically how to create a binding from scratch
+	BindAction(IA, TriggerEvent, Object, Func);
 }

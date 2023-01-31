@@ -7,6 +7,7 @@
 #include "InputAction.h"
 #include "QbaInputConfig.generated.h"
 
+
 USTRUCT(BlueprintType)
 struct FTaggedInputAction
 {

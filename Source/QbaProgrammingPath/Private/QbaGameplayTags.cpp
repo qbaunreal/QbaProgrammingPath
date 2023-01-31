@@ -5,9 +5,9 @@
 
 
 // Q: Why do I construct it like this? What is the purpouse of constructing struct like this in cpp file?
-FQbaGameplayTags FQbaGameplayTags::GameplayTags;
+FQbaInputTags FQbaInputTags::InputTags;
 
-void FQbaGameplayTags::AddTags()
+void FQbaInputTags::AddInputTags()
 {
 	UGameplayTagsManager& Manager = UGameplayTagsManager::Get();
 
@@ -18,4 +18,19 @@ void FQbaGameplayTags::AddTags()
 	InputTag_Fire = Manager.AddNativeGameplayTag(TEXT("InputTag.Fire"));
 	InputTag_Aim = Manager.AddNativeGameplayTag(TEXT("InputTag.Aim"));
 	InputTag_AbilityWheel = Manager.AddNativeGameplayTag(TEXT("InputTag.AbilityWheel"));
+}
+
+FQbaAbilityTags FQbaAbilityTags::AbilityTags;
+void FQbaAbilityTags::AddAbilityTags()
+{
+	UGameplayTagsManager& Manager = UGameplayTagsManager::Get();
+
+	AbilityTag_Movement = Manager.AddNativeGameplayTag(TEXT("AbilityTag.Movement.Walk"));
+	AbilityTag_CameraMouse = Manager.AddNativeGameplayTag(TEXT("AbilityTag.Movement.Camera.Mouse"));
+	AbilityTag_CameraGamepad = Manager.AddNativeGameplayTag(TEXT("AbilityTag.Movement.Camera.Gamepad"));
+	AbilityTag_Jump = Manager.AddNativeGameplayTag(TEXT("AbilityTag.Movement.Jump"));
+	AbilityTag_Sprint = Manager.AddNativeGameplayTag(TEXT("AbilityTag.Movement.Sprint"));
+	AbilityTag_Dash = Manager.AddNativeGameplayTag(TEXT("AbilityTag.Movement.Dash"));
+	AbilityTag_Telekinesis = Manager.AddNativeGameplayTag(TEXT("AbilityTag.Skills.Telelkinesis"));
+	//NOTE: Tags names are not final.
 }

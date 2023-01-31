@@ -15,12 +15,14 @@ class QBAPROGRAMMINGPATH_API UQbaAssetManager : public UAssetManager
 	static UQbaAssetManager& Get();
 
 public:
-	FORCEINLINE const FQbaGameplayTags& GetTags() { return GameplayTags; };
+	FORCEINLINE const FQbaInputTags& GetInputTags() { return InputTags; };
+	FORCEINLINE const FQbaAbilityTags& GetAbilityTags() { return AbilityTags; };
 
 protected:
 
 	virtual void StartInitialLoading() override;
 
 public:
-	FQbaGameplayTags GameplayTags;
+	FQbaInputTags InputTags;
+	FQbaAbilityTags AbilityTags;
 };

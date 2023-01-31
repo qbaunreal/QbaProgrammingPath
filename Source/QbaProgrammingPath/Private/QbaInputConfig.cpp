@@ -1,6 +1,5 @@
 
 #include "QbaInputConfig.h"
-#include "InputAction.h"
 
 
 const UInputAction* UQbaInputConfig::FindInputActionForTag(const FGameplayTag& InputTag) const

@@ -14,7 +14,10 @@ void UQbaAssetManager::StartInitialLoading()
 {
 	Super::StartInitialLoading();
 	
-	GameplayTags = FQbaGameplayTags::Get();
-	GameplayTags.AddTags();
+	InputTags = FQbaInputTags::Get();
+	InputTags.AddInputTags();
+
+	AbilityTags = FQbaAbilityTags::Get();
+	AbilityTags.AddAbilityTags();
 }
 
