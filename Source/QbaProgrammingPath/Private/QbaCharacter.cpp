@@ -3,6 +3,7 @@
 #include "QbaEnhancedInputComponent.h"
 #include "QbaCameraSystemComponent.h"
 #include "QbaAssetManager.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "QbaAbilitySystemComponent.h"
 #include "GameplayTagsManager.h"
 #include "InputActionValue.h"
@@ -15,6 +16,8 @@ AQbaCharacter::AQbaCharacter()
 
 	CameraSystem = CreateDefaultSubobject<UQbaCameraSystemComponent>(TEXT("Camera System"));
 	AbilitySystem = CreateDefaultSubobject<UQbaAbilitySystemComponent>(TEXT("Ability System"));
+	AbilitySystem->SetIsReplicated(true);
+	BasicAttributes = CreateDefaultSubobject<UQbaAttributeSet_Basic>(TEXT("Basic Attributes"));
 
 	check(CameraSystem);
 	CameraSystem->Construct(this);
@@ -23,6 +26,29 @@ AQbaCharacter::AQbaCharacter()
 void AQbaCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	/*BasicStatsHUD->*/
+
+	if (AbilitySystem)
+	{
+		if (JumpAbility)
+		{
+			FGameplayAbilitySpec JumpAbilitySpecs(JumpAbility, 1, INDEX_NONE, this);
+			AbilitySystem->GiveAbility(JumpAbilitySpecs);
+		}
+
+		AbilitySystem->GetGameplayAttributeValueChangeDelegate(BasicAttributes->GetStaminaAttribute()).AddUObject(this, &AQbaCharacter::OnStaminaUpdated);
+		
+	}
+	
+}
+
+void AQbaCharacter::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+	AbilitySystem->InitAbilityActorInfo(this, this); //Not sure if should be on posseded by or if in beginplay
+
+	AbilitySystem->RefreshAbilityActorInfo();
 }
 
 UAbilitySystemComponent* AQbaCharacter::GetAbilitySystemComponent() const
@@ -33,6 +59,7 @@ UAbilitySystemComponent* AQbaCharacter::GetAbilitySystemComponent() const
 void AQbaCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
 }
 
 void AQbaCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -44,8 +71,10 @@ void AQbaCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	check(InputConfig);
 	check (AssetManager);
 
-	FQbaInputTags InputTags = AssetManager->GetInputTags();
+	InputTags = AssetManager->GetInputTags();
+	AbilityTags = AssetManager->GetAbilityTags();
 
+	//TODO: I am not sure if I don't want to rework this, to just bind abilities to this inputs. and everything in here could be a separate abilility bound to
 	EnhancedInputComponent->BindActionByTag(InputConfig, InputTags.InputTag_Move, ETriggerEvent::Triggered, this, &AQbaCharacter::Input_Move);
 	EnhancedInputComponent->BindActionByTag(InputConfig, InputTags.InputTag_Look_Mouse, ETriggerEvent::Triggered, this, &AQbaCharacter::Input_Look);
 	EnhancedInputComponent->BindActionByTag(InputConfig, InputTags.InputTag_Look_Gamepad, ETriggerEvent::Triggered, this, &AQbaCharacter::Input_Look_Gamepad);
@@ -108,12 +137,19 @@ void AQbaCharacter::Input_Look_Gamepad(const FInputActionValue& InputActionValue
 	}
 }
 
+//TODO: bind it directly into the ability, might need to add some members to the QbaGameplayTags
 void AQbaCharacter::Input_Jump(const FInputActionValue& InputActionValue)
 {
 	//NOTE: In order to use Button, pls uncomment a line in FInputActionValue
-	bool BoolValue = InputActionValue.Get<FInputActionValue::Button>();
+	bool bInputAllowJump = InputActionValue.Get<FInputActionValue::Button>();
+	bool bIsGrounded = this->GetCharacterMovement()->IsMovingOnGround();
+	
 
-	if (BoolValue) Jump(); //TODO: replace it with GameplayAbility_CharacterJump
+	if (bInputAllowJump && bIsGrounded)
+	{
+		FGameplayTagContainer JumpTagContainer(AbilityTags.AbilityTag_Jump);
+		AbilitySystem->TryActivateAbilitiesByTag(JumpTagContainer);
+	}
 	
 }
 
@@ -140,4 +176,22 @@ void AQbaCharacter::TurnAtRate(float Value, float Rate)
 void AQbaCharacter::LookUpAtRate(float Value, float Rate)
 {
 	AddControllerPitchInput(Value * Rate * GetWorld()->GetDeltaSeconds());
+}
+
+
+void AQbaCharacter::OnStaminaUpdated(const FOnAttributeChangeData& Data)
+{
+	OnStaminaChange.Broadcast(Data.NewValue, GetMaxStamina());
+}
+
+float AQbaCharacter::GetMaxStamina() const
+{ 
+	if (!AbilitySystem) return 0.f;
+	return  AbilitySystem->GetNumericAttribute(BasicAttributes->GetMaxStaminaAttribute()); 
+}
+
+float AQbaCharacter::GetStamina() const
+{
+	if (!AbilitySystem) return 0.f;
+	return  AbilitySystem->GetNumericAttribute(BasicAttributes->GetStaminaAttribute());
 }

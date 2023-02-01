@@ -8,7 +8,7 @@ public class QbaProgrammingPath : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "GameplayTags", "EnhancedInput", /*"GameplayAbilities",*/ "GameplayTasks"});
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "GameplayTags", "EnhancedInput", "UMG",/*"GameplayAbilities",*/ "GameplayTasks"});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 

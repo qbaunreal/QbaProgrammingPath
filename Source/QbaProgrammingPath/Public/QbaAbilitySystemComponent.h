@@ -13,5 +13,8 @@ UCLASS()
 class QBAPROGRAMMINGPATH_API UQbaAbilitySystemComponent : public UAbilitySystemComponent
 {
 	GENERATED_BODY()
+
+//void BindAbilityToInputAction(UInputAction* InputAction, )
+//
 	
 };

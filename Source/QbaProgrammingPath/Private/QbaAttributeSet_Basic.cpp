@@ -85,7 +85,7 @@ float UQbaAttributeSet_Basic::GetMaxStamina() const
 
 void UQbaAttributeSet_Basic::SetMaxStamina(float NewMaxStaminaValue)
 {
-	NewMaxStaminaValue = FMath::Max(NewMaxStaminaValue, 0.f);
+	/*NewMaxStaminaValue = FMath::Clamp(NewMaxStaminaValue, 0.f, GetMaxHealth());*/
 
 	UAbilitySystemComponent* AbilityComponent = GetOwningAbilitySystemComponent();
 
@@ -128,41 +128,8 @@ void UQbaAttributeSet_Basic::SetMaxMana(float NewMaxManaValue)
 	AbilityComponent->SetNumericAttributeBase(GetMaxManaAttribute(), NewMaxManaValue);
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //** 
-// 1. Have a force calulation, based on the expression calulation. Takes mass of the object. Stat is kept as transient in Basic stats (for a player)
+// 1. Telekinesis: Have a force calulation, based on the expression calulation. Takes mass of the object. Stat is kept as transient in Basic stats (for a player)
 // 2. have a mana consumption calculation, the higher the mass, the bigger cost /sec
 // 3. In gameplay ability component create a binding to enhanced input
 // 4. Input will be like in gemini, and get rid of the ability wheel. There will be max 3 abilities. Granted when entering some volume or other s

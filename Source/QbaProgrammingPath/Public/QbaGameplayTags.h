@@ -25,6 +25,11 @@ public:
 
 private:
 	//Q: I need to do a little more reasearch. I have never declared a struct like that and im' not 100% sure how it works. I was only using the UStruct(as below)
+	// Is this a singleton? that is stored only in one place in for the whole program
+	// I had a strange issue where I was assigning values to the FGameplayTag from the Asset manager at the start at the engine and it works fine...
+	// ..until compiling the engine again. after doing so it was going back to default Null values. So I store this variable inside the QbaAssetManager now but I'm not 100 sure if 
+	// if i am not just copying them and having two versions of them.
+
 	static FQbaInputTags InputTags;
 };
 

@@ -6,6 +6,8 @@
 #include "Abilities/GameplayAbility.h"
 #include "QbaGameplayAbility.generated.h"
 
+class UInputAction;
+
 /**
  * 
  */
@@ -14,6 +16,8 @@ class QBAPROGRAMMINGPATH_API UQbaGameplayAbility : public UGameplayAbility
 {
 	GENERATED_BODY()
 	
+public:
+	UInputAction* InputAction;
 };
 
 // TODOS:
