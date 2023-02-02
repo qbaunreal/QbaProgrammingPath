@@ -132,7 +132,7 @@ void UQbaAttributeSet_Basic::SetMaxMana(float NewMaxManaValue)
 // 1. Telekinesis: Have a force calulation, based on the expression calulation. Takes mass of the object. Stat is kept as transient in Basic stats (for a player)
 // 2. have a mana consumption calculation, the higher the mass, the bigger cost /sec
 // 3. In gameplay ability component create a binding to enhanced input
-// 4. Input will be like in gemini, and get rid of the ability wheel. There will be max 3 abilities. Granted when entering some volume or other s
+// 4. 
 // 5. each ability should have cooldown
 // 6. each ability should cancel each other
 // 7 jumping should be separate ability
