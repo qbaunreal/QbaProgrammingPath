@@ -19,6 +19,3 @@ class QBAPROGRAMMINGPATH_API UQbaGameplayAbility : public UGameplayAbility
 public:
 	UInputAction* InputAction;
 };
-
-// TODOS:
-// 1. Add InputAction for the Ability so they are bound to the enhanced input actions such as "Ablity 1 / Ablity2 etc."

@@ -14,7 +14,4 @@ class QBAPROGRAMMINGPATH_API UQbaAbilitySystemComponent : public UAbilitySystemC
 {
 	GENERATED_BODY()
 
-//void BindAbilityToInputAction(UInputAction* InputAction, )
-//
-	
 };

@@ -82,6 +82,8 @@ void AQbaCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	EnhancedInputComponent->BindActionByTag(InputConfig, InputTags.InputTag_Jump, ETriggerEvent::Triggered, this, &AQbaCharacter::Input_Jump);
 	EnhancedInputComponent->BindActionByTag(InputConfig, InputTags.InputTag_Aim, ETriggerEvent::Triggered, this, &AQbaCharacter::Input_Aim);
 	EnhancedInputComponent->BindActionByTag(InputConfig, InputTags.InputTag_AbilityWheel, ETriggerEvent::Triggered, this, &AQbaCharacter::Input_AbilityWheel);
+
+	// The other way to bind 1,2,3 is to assign those from uinputAction, so InputAction Ability1 == bind to abilit int index 1
 }
 
 void AQbaCharacter::Input_Move(const FInputActionValue& InputActionValue)
@@ -149,6 +151,8 @@ void AQbaCharacter::Input_Jump(const FInputActionValue& InputActionValue)
 	{
 		FGameplayTagContainer JumpTagContainer(AbilityTags.AbilityTag_Jump);
 		AbilitySystem->TryActivateAbilitiesByTag(JumpTagContainer);
+
+		AbilitySystem->PressInputID(1);
 	}
 	
 }
