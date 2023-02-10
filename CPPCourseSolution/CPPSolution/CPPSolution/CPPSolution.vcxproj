@@ -130,6 +130,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CPPSolution.cpp" />
+    <ClCompile Include="Examples1.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CPPSolution.h" />
+    <ClInclude Include="Examples1.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
