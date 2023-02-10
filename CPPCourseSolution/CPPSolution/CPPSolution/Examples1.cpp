@@ -47,13 +47,10 @@ void PrintVectorElems(const vector<T>& InVector)
 template<typename T>
 void Print2DVectorElems(const vector<vector<T>>& InVector)
 {
-	if constexpr (is_integral_v<T>)  //Q: big question time: why have i use contexpr here? otherwise it does not compile correctly
-	{								// found "Used where code needs to be executed based on a run-time or compile-time (since C++17) condition" not sure why it can't just be normal if
+	if constexpr (is_integral_v<T>)  //Q: big question time: why have i use constexpr here? otherwise it does not compile correctly
+	{								// found "Used where code needs to be executed based on a run-time or compile-time (since C++17) condition" not 100% sure why it can't just be normal if
 									// behaves the same for:   is_same_v< T, int > , is_same< T, int >::value, is_integral_v<T>
-									//basically without contexpr it ommits this if :thonking:
-									// what i've found that this expression should contexpr inline bool, 
-									//I have no clue how they work and why tf had i put the word before nawias () and not inside the expression
-									// it's not usable at all in this function but I was curious and was testing some stuff
+									// Did some digging and thought that becuase this a template function that is evaluated at compile time and it cannot use "if" (evalueated at runtime)?
 	}
 	else
 	{
