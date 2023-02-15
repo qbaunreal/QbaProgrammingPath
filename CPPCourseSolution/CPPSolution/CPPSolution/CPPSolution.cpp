@@ -8,7 +8,8 @@
 int main()
 {
 	//ConstructSectionFromClass<Section6>();
-	ConstructSectionFromClass<Section7>();
+	/*ConstructSectionFromClass<Section7>();*/
+	ConstructSectionFromClass<Section8>();
 	return 0;
 }
 

@@ -103,7 +103,14 @@ Section7::Section7()
 
 Section8::Section8()
 {
+	int BaseValue{ 5 };
+	cout << "BaseValue: " << BaseValue << endl;
 
+	int PreIncrementInt = ++BaseValue;
+	BaseValue = 5;
 
+	int PostIncrementInt = BaseValue++;
 
+	cout << "PreIncrement: " << PreIncrementInt << endl;
+	cout << "PostIncrement: " << PostIncrementInt << endl;
 }
