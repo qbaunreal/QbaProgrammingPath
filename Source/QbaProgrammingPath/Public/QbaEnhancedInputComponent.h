@@ -26,7 +26,10 @@ void UQbaEnhancedInputComponent::BindActionByTag(const UQbaInputConfig* InputCon
 	check(InputConfig);
 	const UInputAction* IA = InputConfig->FindInputActionForTag(InputTag);
 
-	if (!IA) return;
+	if (!IA) 
+	{ 
+		return; 
+	}
 	
 	BindAction(IA, TriggerEvent, Object, Func);
 }

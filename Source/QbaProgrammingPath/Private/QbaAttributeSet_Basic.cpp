@@ -31,7 +31,10 @@ void UQbaAttributeSet_Basic::SetHealth(float NewHealthValue)
 
 	UAbilitySystemComponent* AbilityComponent = GetOwningAbilitySystemComponent();
 	
-	if (!AbilityComponent) return;
+	if (!AbilityComponent)
+	{
+		return;
+	}
 		
 	AbilityComponent->SetNumericAttributeBase(GetHealthAttribute(), NewHealthValue);
 }
@@ -53,7 +56,10 @@ void UQbaAttributeSet_Basic::SetMaxHealth(float NewMaxHealthValue)
 
 	UAbilitySystemComponent* AbilityComponent = GetOwningAbilitySystemComponent();
 
-	if (!AbilityComponent) return;
+	if (!AbilityComponent) 
+	{
+		return; 
+	}
 
 	AbilityComponent->SetNumericAttributeBase(GetMaxHealthAttribute(), NewMaxHealthValue);
 }
@@ -70,7 +76,10 @@ void UQbaAttributeSet_Basic::SetStamina(float NewStaminaValue)
 
 	UAbilitySystemComponent* AbilityComponent = GetOwningAbilitySystemComponent();
 
-	if (!AbilityComponent) return;
+	if (!AbilityComponent) 
+	{ 
+		return; 
+	}
 
 	AbilityComponent->SetNumericAttributeBase(GetStaminaAttribute(), NewStaminaValue);
 }
@@ -87,7 +96,10 @@ void UQbaAttributeSet_Basic::SetMaxStamina(float NewMaxStaminaValue)
 
 	UAbilitySystemComponent* AbilityComponent = GetOwningAbilitySystemComponent();
 
-	if (!AbilityComponent) return;
+	if (!AbilityComponent)
+	{
+		return;
+	}
 
 	AbilityComponent->SetNumericAttributeBase(GetMaxStaminaAttribute(), NewMaxStaminaValue);
 }
@@ -104,7 +116,10 @@ void UQbaAttributeSet_Basic::SetMana(float NewManaValue)
 
 	UAbilitySystemComponent* AbilityComponent = GetOwningAbilitySystemComponent();
 
-	if (!AbilityComponent) return;
+	if (!AbilityComponent)
+	{
+		return;
+	}
 
 	AbilityComponent->SetNumericAttributeBase(GetManaAttribute(), NewManaValue);
 }
@@ -121,7 +136,10 @@ void UQbaAttributeSet_Basic::SetMaxMana(float NewMaxManaValue)
 
 	UAbilitySystemComponent* AbilityComponent = GetOwningAbilitySystemComponent();
 
-	if (!AbilityComponent) return;
+	if (!AbilityComponent)
+	{
+		return;
+	}
 
 	AbilityComponent->SetNumericAttributeBase(GetMaxManaAttribute(), NewMaxManaValue);
 }

@@ -82,7 +82,10 @@ void AQbaCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 
 void AQbaCharacter::Input_Move(const FInputActionValue& InputActionValue)
 {
-	if (!Controller) return;
+	if (!Controller) 
+	{ 
+		return;
+	}
 	const FVector2D AxisValue = InputActionValue.Get<FInputActionValue::Axis2D>();
 	const FRotator ControllerRotation = FRotator(0.0f, Controller->GetControlRotation().Yaw, 0.0f);
 
@@ -101,7 +104,10 @@ void AQbaCharacter::Input_Move(const FInputActionValue& InputActionValue)
 
 void AQbaCharacter::Input_Look(const FInputActionValue& InputActionValue)
 {
-	if (!Controller) return;
+	if (!Controller) 
+	{
+		return; 
+	}
 
 	FVector2D AxisValue = InputActionValue.Get<FInputActionValue::Axis2D>();
 
@@ -118,7 +124,10 @@ void AQbaCharacter::Input_Look(const FInputActionValue& InputActionValue)
 
 void AQbaCharacter::Input_Look_Gamepad(const FInputActionValue& InputActionValue)
 {
-	if (!Controller) return;
+	if (!Controller) 
+	{
+		return; 
+	}
 
 	FVector2D AxisValue = InputActionValue.Get<FInputActionValue::Axis2D>();
 
@@ -181,12 +190,18 @@ void AQbaCharacter::OnStaminaUpdated(const FOnAttributeChangeData& Data)
 
 float AQbaCharacter::GetMaxStamina() const
 { 
-	if (!AbilitySystem) return 0.f;
+	if (!AbilitySystem) 
+	{ 
+		return 0.f; 
+	}
 	return  AbilitySystem->GetNumericAttribute(BasicAttributes->GetMaxStaminaAttribute()); 
 }
 
 float AQbaCharacter::GetStamina() const
 {
-	if (!AbilitySystem) return 0.f;
+	if (!AbilitySystem)
+	{
+		return 0.f;
+	}
 	return  AbilitySystem->GetNumericAttribute(BasicAttributes->GetStaminaAttribute());
 }

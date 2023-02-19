@@ -16,7 +16,11 @@ void AQbaPlayerController::BeginPlay()
 
 void AQbaPlayerController::AddDefaultMappingContext(const TObjectPtr<UInputMappingContext> ContextToMap) const
 {
-	if (!Cast<UEnhancedPlayerInput>(this->PlayerInput)) return;
+	if (!Cast<UEnhancedPlayerInput>(this->PlayerInput))
+	{
+		return;
+	}
+
 	UEnhancedInputLocalPlayerSubsystem* EnhancedInputSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(this->GetLocalPlayer());
 
 	if (EnhancedInputSubsystem)

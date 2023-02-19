@@ -21,8 +21,15 @@ void UQbaCameraSystemComponent::Construct(AActor* Owner)
 	PassInitParmsToArm();
 	PassInitParamsToCamera();
 
-	if (!Owner)return;
-	if (!CameraSpringArm || !CharacterCamera) return;
+	if (!Owner)
+	{
+		return;
+	}
+
+	if (!CameraSpringArm || !CharacterCamera) 
+	{ 
+		return; 
+	}
 
 	CameraSpringArm->SetupAttachment(Owner->GetRootComponent());
 	CharacterCamera->SetupAttachment(CameraSpringArm);
