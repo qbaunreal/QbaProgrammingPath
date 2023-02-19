@@ -1,4 +1,4 @@
-
+// Copyright Jakub Urbanek. All Rights Reserved.
 
 #pragma once
 
@@ -6,7 +6,6 @@
 #include "Camera/PlayerCameraManager.h"
 #include "QbaCameraManager.generated.h"
 
-// Will keep that for later.
 
 UCLASS()
 class QBAPROGRAMMINGPATH_API AQbaCameraManager : public APlayerCameraManager

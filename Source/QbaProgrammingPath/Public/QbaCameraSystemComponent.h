@@ -1,4 +1,4 @@
-
+// Copyright Jakub Urbanek. All Rights Reserved.
 
 #pragma once
 
@@ -14,7 +14,7 @@ struct FCameraArmParams
 public:
 	float ArmLenght = 100.f;
 	bool bInheritControlRotation = true;
-	//etc..
+	
 	FORCEINLINE static const FCameraArmParams& Get() { return ArmParams; }
 private:
 	static FCameraArmParams ArmParams;
@@ -24,7 +24,7 @@ struct FCameraParams
 {
 public:
 	float FOV = 60.f;
-	//etc..
+	
 	FORCEINLINE static const FCameraParams& Get() { return CameraParams; }
 
 private:

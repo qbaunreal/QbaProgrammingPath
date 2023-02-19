@@ -1,4 +1,4 @@
-
+// Copyright Jakub Urbanek. All Rights Reserved.
 
 #pragma once
 
@@ -8,9 +8,7 @@
 
 class UInputAction;
 
-/**
- * 
- */
+
 UCLASS()
 class QBAPROGRAMMINGPATH_API UQbaGameplayAbility : public UGameplayAbility
 {

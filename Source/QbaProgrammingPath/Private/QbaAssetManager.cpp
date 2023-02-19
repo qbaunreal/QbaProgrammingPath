@@ -1,6 +1,6 @@
+// Copyright Jakub Urbanek. All Rights Reserved.
 
 #include "QbaAssetManager.h"
-
 
 UQbaAssetManager& UQbaAssetManager::Get()
 {

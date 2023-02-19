@@ -1,4 +1,4 @@
-
+// Copyright Jakub Urbanek. All Rights Reserved.
 
 #pragma once
 
@@ -6,9 +6,7 @@
 #include "GameFramework/GameMode.h"
 #include "QbaGameMode.generated.h"
 
-/**
- * 
- */
+
 UCLASS()
 class QBAPROGRAMMINGPATH_API AQbaGameMode : public AGameMode
 {

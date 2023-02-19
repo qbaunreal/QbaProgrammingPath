@@ -1,3 +1,4 @@
+// Copyright Jakub Urbanek. All Rights Reserved.
 
 #pragma once
 

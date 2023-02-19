@@ -1,5 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
+// Copyright Jakub Urbanek. All Rights Reserved.
 
 #include "QbaProgrammingPathGameModeBase.h"
 

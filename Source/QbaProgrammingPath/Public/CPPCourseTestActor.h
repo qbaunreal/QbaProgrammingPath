@@ -1,4 +1,4 @@
-
+// Copyright Jakub Urbanek. All Rights Reserved.
 
 #pragma once
 
@@ -6,9 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "CPPCourseTestActor.generated.h"
 
-/**
- * Actor used for the CPP course 
- */
+
 UCLASS()
 class QBAPROGRAMMINGPATH_API ACPPCourseTestActor : public AActor
 {

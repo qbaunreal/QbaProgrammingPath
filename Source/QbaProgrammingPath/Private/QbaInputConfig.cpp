@@ -1,6 +1,6 @@
+// Copyright Jakub Urbanek. All Rights Reserved.
 
 #include "QbaInputConfig.h"
-
 
 const UInputAction* UQbaInputConfig::FindInputActionForTag(const FGameplayTag& InputTag) const
 {

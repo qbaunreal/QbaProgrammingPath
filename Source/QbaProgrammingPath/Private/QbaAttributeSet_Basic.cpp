@@ -1,5 +1,4 @@
-
-
+// Copyright Jakub Urbanek. All Rights Reserved.
 
 #include "QbaAttributeSet_Basic.h"
 #include "GameplayEffect.h"
@@ -12,7 +11,6 @@ void UQbaAttributeSet_Basic::PostGameplayEffectExecute(const FGameplayEffectModC
 	Super::PostGameplayEffectExecute(Data); 
 }
 
-//TODO: Learn and understand how this replication works.
 void UQbaAttributeSet_Basic::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -85,7 +83,7 @@ float UQbaAttributeSet_Basic::GetMaxStamina() const
 
 void UQbaAttributeSet_Basic::SetMaxStamina(float NewMaxStaminaValue)
 {
-	/*NewMaxStaminaValue = FMath::Clamp(NewMaxStaminaValue, 0.f, GetMaxHealth());*/
+	NewMaxStaminaValue = FMath::Max(NewMaxStaminaValue, 0.f);
 
 	UAbilitySystemComponent* AbilityComponent = GetOwningAbilitySystemComponent();
 
@@ -127,15 +125,3 @@ void UQbaAttributeSet_Basic::SetMaxMana(float NewMaxManaValue)
 
 	AbilityComponent->SetNumericAttributeBase(GetMaxManaAttribute(), NewMaxManaValue);
 }
-
-//** 
-// 1. Telekinesis: Have a force calulation, based on the expression calulation. Takes mass of the object. Stat is kept as transient in Basic stats (for a player)
-// 2. have a mana consumption calculation, the higher the mass, the bigger cost /sec
-// 3. In gameplay ability component create a binding to enhanced input
-// 4. 
-// 5. each ability should have cooldown
-// 6. each ability should cancel each other
-// 7 jumping should be separate ability
-// 8. walking should be separate abiltiy
-// 9. Ideally i would like to see it working in muliplayer
-

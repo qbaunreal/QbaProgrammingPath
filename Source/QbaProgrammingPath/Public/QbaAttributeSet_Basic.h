@@ -1,4 +1,4 @@
-
+// Copyright Jakub Urbanek. All Rights Reserved.
 
 #pragma once
 
@@ -7,9 +7,7 @@
 #include "AbilitySystemComponent.h"
 #include "QbaAttributeSet_Basic.generated.h"
 
-/**
- * Setup based on https://docs.unrealengine.com/5.0/en-US/gameplay-attributes-and-attribute-sets-for-the-gameplay-ability-system-in-unreal-engine/
- */
+
 UCLASS()
 class QBAPROGRAMMINGPATH_API UQbaAttributeSet_Basic : public UAttributeSet
 {
@@ -32,7 +30,6 @@ public:
 	UFUNCTION()
 	virtual void OnRep_Health(const FGameplayAttributeData& OldHealth);
 	
-
 	/**  Character Max Health */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Health")
 	FGameplayAttributeData MaxHealth;

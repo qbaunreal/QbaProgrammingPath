@@ -1,4 +1,4 @@
-
+// Copyright Jakub Urbanek. All Rights Reserved.
 
 #pragma once
 
@@ -7,7 +7,6 @@
 #include "QbaPlayerController.generated.h"
 
 class UInputMappingContext;
-
 
 UCLASS()
 class QBAPROGRAMMINGPATH_API AQbaPlayerController : public APlayerController
@@ -24,5 +23,4 @@ public:
 private:
 	void AddDefaultMappingContext(const TObjectPtr<UInputMappingContext> ContextToMap) const;
 
-	
 };

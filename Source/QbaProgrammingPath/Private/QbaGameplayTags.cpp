@@ -1,3 +1,4 @@
+// Copyright Jakub Urbanek. All Rights Reserved.
 
 #include "QbaGameplayTags.h"
 #include "GameplayTagsManager.h"

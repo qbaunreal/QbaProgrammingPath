@@ -1,3 +1,4 @@
+// Copyright Jakub Urbanek. All Rights Reserved.
 
 #include "QbaCharacter.h"
 #include "QbaEnhancedInputComponent.h"
@@ -7,7 +8,6 @@
 #include "QbaAbilitySystemComponent.h"
 #include "GameplayTagsManager.h"
 #include "InputActionValue.h"
-
 
 
 AQbaCharacter::AQbaCharacter()
@@ -27,8 +27,6 @@ void AQbaCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	/*BasicStatsHUD->*/
-
 	if (AbilitySystem)
 	{
 		if (JumpAbility)
@@ -37,8 +35,7 @@ void AQbaCharacter::BeginPlay()
 			AbilitySystem->GiveAbility(JumpAbilitySpecs);
 		}
 
-		AbilitySystem->GetGameplayAttributeValueChangeDelegate(BasicAttributes->GetStaminaAttribute()).AddUObject(this, &AQbaCharacter::OnStaminaUpdated);
-		
+		AbilitySystem->GetGameplayAttributeValueChangeDelegate(BasicAttributes->GetStaminaAttribute()).AddUObject(this, &AQbaCharacter::OnStaminaUpdated);	
 	}
 	
 }
@@ -46,7 +43,7 @@ void AQbaCharacter::BeginPlay()
 void AQbaCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
-	AbilitySystem->InitAbilityActorInfo(this, this); //Not sure if should be on posseded by or if in beginplay
+	AbilitySystem->InitAbilityActorInfo(this, this);
 
 	AbilitySystem->RefreshAbilityActorInfo();
 }
@@ -59,7 +56,6 @@ UAbilitySystemComponent* AQbaCharacter::GetAbilitySystemComponent() const
 void AQbaCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
 void AQbaCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -74,7 +70,6 @@ void AQbaCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	InputTags = AssetManager->GetInputTags();
 	AbilityTags = AssetManager->GetAbilityTags();
 
-	//TODO: I am not sure if I don't want to rework this, to just bind abilities to this inputs. and everything in here could be a separate abilility bound to
 	EnhancedInputComponent->BindActionByTag(InputConfig, InputTags.InputTag_Move, ETriggerEvent::Triggered, this, &AQbaCharacter::Input_Move);
 	EnhancedInputComponent->BindActionByTag(InputConfig, InputTags.InputTag_Look_Mouse, ETriggerEvent::Triggered, this, &AQbaCharacter::Input_Look);
 	EnhancedInputComponent->BindActionByTag(InputConfig, InputTags.InputTag_Look_Gamepad, ETriggerEvent::Triggered, this, &AQbaCharacter::Input_Look_Gamepad);
@@ -83,7 +78,6 @@ void AQbaCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	EnhancedInputComponent->BindActionByTag(InputConfig, InputTags.InputTag_Aim, ETriggerEvent::Triggered, this, &AQbaCharacter::Input_Aim);
 	EnhancedInputComponent->BindActionByTag(InputConfig, InputTags.InputTag_AbilityWheel, ETriggerEvent::Triggered, this, &AQbaCharacter::Input_AbilityWheel);
 
-	// The other way to bind 1,2,3 is to assign those from uinputAction, so InputAction Ability1 == bind to abilit int index 1
 }
 
 void AQbaCharacter::Input_Move(const FInputActionValue& InputActionValue)
@@ -139,14 +133,12 @@ void AQbaCharacter::Input_Look_Gamepad(const FInputActionValue& InputActionValue
 	}
 }
 
-//TODO: bind it directly into the ability, might need to add some members to the QbaGameplayTags
 void AQbaCharacter::Input_Jump(const FInputActionValue& InputActionValue)
 {
 	//NOTE: In order to use Button, pls uncomment a line in FInputActionValue
 	bool bInputAllowJump = InputActionValue.Get<FInputActionValue::Button>();
 	bool bIsGrounded = this->GetCharacterMovement()->IsMovingOnGround();
 	
-
 	if (bInputAllowJump && bIsGrounded)
 	{
 		FGameplayTagContainer JumpTagContainer(AbilityTags.AbilityTag_Jump);
@@ -154,7 +146,6 @@ void AQbaCharacter::Input_Jump(const FInputActionValue& InputActionValue)
 
 		AbilitySystem->PressInputID(1);
 	}
-	
 }
 
 void AQbaCharacter::Input_Fire(const FInputActionValue& InputActionValue)
