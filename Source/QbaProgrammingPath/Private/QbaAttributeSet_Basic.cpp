@@ -31,12 +31,10 @@ void UQbaAttributeSet_Basic::SetHealth(float NewHealthValue)
 
 	UAbilitySystemComponent* AbilityComponent = GetOwningAbilitySystemComponent();
 	
-	if (!AbilityComponent)
+	if (AbilityComponent)
 	{
-		return;
-	}
-		
-	AbilityComponent->SetNumericAttributeBase(GetHealthAttribute(), NewHealthValue);
+		AbilityComponent->SetNumericAttributeBase(GetHealthAttribute(), NewHealthValue);
+	}	
 }
 
 void UQbaAttributeSet_Basic::OnRep_Health(const FGameplayAttributeData& OldHealth)
@@ -56,12 +54,10 @@ void UQbaAttributeSet_Basic::SetMaxHealth(float NewMaxHealthValue)
 
 	UAbilitySystemComponent* AbilityComponent = GetOwningAbilitySystemComponent();
 
-	if (!AbilityComponent) 
+	if (AbilityComponent) 
 	{
-		return; 
+		AbilityComponent->SetNumericAttributeBase(GetMaxHealthAttribute(), NewMaxHealthValue);
 	}
-
-	AbilityComponent->SetNumericAttributeBase(GetMaxHealthAttribute(), NewMaxHealthValue);
 }
 
 /** Stamina Getters */
@@ -76,12 +72,11 @@ void UQbaAttributeSet_Basic::SetStamina(float NewStaminaValue)
 
 	UAbilitySystemComponent* AbilityComponent = GetOwningAbilitySystemComponent();
 
-	if (!AbilityComponent) 
+	if (AbilityComponent) 
 	{ 
-		return; 
-	}
+		AbilityComponent->SetNumericAttributeBase(GetStaminaAttribute(), NewStaminaValue);;
 
-	AbilityComponent->SetNumericAttributeBase(GetStaminaAttribute(), NewStaminaValue);
+	}
 }
 
 /** Max Stamina Getters */
@@ -96,12 +91,10 @@ void UQbaAttributeSet_Basic::SetMaxStamina(float NewMaxStaminaValue)
 
 	UAbilitySystemComponent* AbilityComponent = GetOwningAbilitySystemComponent();
 
-	if (!AbilityComponent)
+	if (AbilityComponent)
 	{
-		return;
+		AbilityComponent->SetNumericAttributeBase(GetMaxStaminaAttribute(), NewMaxStaminaValue);;
 	}
-
-	AbilityComponent->SetNumericAttributeBase(GetMaxStaminaAttribute(), NewMaxStaminaValue);
 }
 
 /** Mana Getters */
@@ -116,12 +109,10 @@ void UQbaAttributeSet_Basic::SetMana(float NewManaValue)
 
 	UAbilitySystemComponent* AbilityComponent = GetOwningAbilitySystemComponent();
 
-	if (!AbilityComponent)
+	if (AbilityComponent)
 	{
-		return;
+		AbilityComponent->SetNumericAttributeBase(GetManaAttribute(), NewManaValue);
 	}
-
-	AbilityComponent->SetNumericAttributeBase(GetManaAttribute(), NewManaValue);
 }
 
 /** Max Mana Getters*/
@@ -136,10 +127,8 @@ void UQbaAttributeSet_Basic::SetMaxMana(float NewMaxManaValue)
 
 	UAbilitySystemComponent* AbilityComponent = GetOwningAbilitySystemComponent();
 
-	if (!AbilityComponent)
+	if (AbilityComponent)
 	{
-		return;
+		AbilityComponent->SetNumericAttributeBase(GetMaxManaAttribute(), NewMaxManaValue);
 	}
-
-	AbilityComponent->SetNumericAttributeBase(GetMaxManaAttribute(), NewMaxManaValue);
 }

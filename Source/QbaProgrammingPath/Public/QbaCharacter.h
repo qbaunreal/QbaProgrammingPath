@@ -5,22 +5,19 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "AbilitySystemInterface.h"
-#include "QbaGameplayTags.h"
-#include "QbaAttributeSet_Basic.h"
 #include "QbaCharacter.generated.h"
 
 class USkeletalMeshComponent;
-class UQbaCameraSystemComponent;
 class UQbaInputConfig;
 class UAbilitySystemComponent;
-class UQbaAbilitySystemComponent;
-class UQbaGameplayAbility;
 class UGameplayAbility;
-struct FInputActionValue;
+class UInputMappingContext;
+class UQbaAttributeSet_Basic;
 struct FOnAttributeChangeData;
+struct FInputActionValue;
 
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnStaminaChange, float, StaminaValue, float, MaxStaminaValue);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnStaminaUpdated, float, StaminaValue, float, MaxStaminaValue);
 
 UCLASS()
 class QBAPROGRAMMINGPATH_API AQbaCharacter : public ACharacter, public IAbilitySystemInterface
@@ -30,13 +27,11 @@ class QBAPROGRAMMINGPATH_API AQbaCharacter : public ACharacter, public IAbilityS
 public:
 	AQbaCharacter();
 
-
 protected:
 	virtual void BeginPlay() override;
+	virtual void PossessedBy(AController* NewController) override;
 
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
-
-	virtual void PossessedBy(AController* NewController) override;
 
 public:	
 	virtual void Tick(float DeltaTime) override;
@@ -50,47 +45,39 @@ public:
 	float GetStamina() const;
 
 	void OnStaminaUpdated(const FOnAttributeChangeData& Data);
-	
+
 private:
+	UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
+	FOnStaminaUpdated StaminaUpdated;
+
+	float StaminaValue{0.f};
+	float MaxStaminaValue{0.f};
+	const float StartingStamina{ 200.f }; //workaround for issue with DataTable
+
 
 	void Input_Move(const FInputActionValue& InputActionValue);
 	void Input_Look(const FInputActionValue& InputActionValue);
-	void Input_Look_Gamepad(const FInputActionValue& InputActionValue);
 	void Input_Jump(const FInputActionValue& InputActionValue);
 	void Input_Fire(const FInputActionValue& InputActionValue);
 	void Input_Aim(const FInputActionValue& InputActionValue);
-	void Input_AbilityWheel(const FInputActionValue& InputActionValue);
 
-	void TurnAtRate(float Value, float Rate);
-	void LookUpAtRate(float Value, float Rate);
-
-public:
-	UPROPERTY(EditDefaultsOnly, Category = "Input")
-	TObjectPtr<UQbaInputConfig> InputConfig;
-
-	UPROPERTY(BlueprintAssignable, Category = "EventDispatchers")
-	FOnStaminaChange OnStaminaChange;
-
-private:
-	UPROPERTY(VisibleAnywhere) TObjectPtr<UQbaCameraSystemComponent> CameraSystem;
 
 	UPROPERTY(VisibleDefaultsOnly, Category = "Abilities")
-	TObjectPtr<UQbaAbilitySystemComponent> AbilitySystem;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite , meta = (AllowPrivateAccess = "true"))
-	float MouseLookRate = 30.f;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta = (AllowPrivateAccess = "true"))
-	float GamepadLookRate = 50.f;
+	TObjectPtr<UAbilitySystemComponent> AbilitySystem{ nullptr };
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Abilities", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<UGameplayAbility> JumpAbility;
 
-	FQbaAbilityTags AbilityTags;
-	FQbaInputTags InputTags;
+	TObjectPtr<UQbaAttributeSet_Basic> BasicAttributes{ nullptr };
 
-	TObjectPtr<UQbaAttributeSet_Basic> BasicAttributes;
-	float StaminaValue;
-	float MaxStaminaValue;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<UInputMappingContext> DefaultMappingContext{ nullptr };
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Input")
+	TObjectPtr<UQbaInputConfig> InputConfig{ nullptr };
+
+	
+
 };
 

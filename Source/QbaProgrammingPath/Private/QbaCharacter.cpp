@@ -1,26 +1,24 @@
 // Copyright Jakub Urbanek. All Rights Reserved.
 
 #include "QbaCharacter.h"
-#include "QbaEnhancedInputComponent.h"
-#include "QbaCameraSystemComponent.h"
-#include "QbaAssetManager.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "QbaAbilitySystemComponent.h"
-#include "GameplayTagsManager.h"
-#include "InputActionValue.h"
+#include "AbilitySystemComponent.h"
+#include "QbaAttributeSet_Basic.h"
 
+#include "QbaInputConfig.h"
+#include "InputActionValue.h"
+#include "InputMappingContext.h"
+#include "EnhancedInputSubsystems.h"
+#include "EnhancedInputComponent.h"
 
 AQbaCharacter::AQbaCharacter()
 {
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
-	CameraSystem = CreateDefaultSubobject<UQbaCameraSystemComponent>(TEXT("Camera System"));
-	AbilitySystem = CreateDefaultSubobject<UQbaAbilitySystemComponent>(TEXT("Ability System"));
+	AbilitySystem = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("Ability System"));
+
 	AbilitySystem->SetIsReplicated(true);
 	BasicAttributes = CreateDefaultSubobject<UQbaAttributeSet_Basic>(TEXT("Basic Attributes"));
-
-	check(CameraSystem);
-	CameraSystem->Construct(this);
 }
 
 void AQbaCharacter::BeginPlay()
@@ -34,18 +32,24 @@ void AQbaCharacter::BeginPlay()
 			FGameplayAbilitySpec JumpAbilitySpecs(JumpAbility, 1, INDEX_NONE, this);
 			AbilitySystem->GiveAbility(JumpAbilitySpecs);
 		}
+		if (BasicAttributes)
+		{
+			BasicAttributes->SetMaxStamina(StartingStamina);
+			BasicAttributes->SetStamina(StartingStamina);
 
-		AbilitySystem->GetGameplayAttributeValueChangeDelegate(BasicAttributes->GetStaminaAttribute()).AddUObject(this, &AQbaCharacter::OnStaminaUpdated);	
+			AbilitySystem->GetGameplayAttributeValueChangeDelegate(BasicAttributes->GetStaminaAttribute()).AddUObject(this, &AQbaCharacter::OnStaminaUpdated);
+		}
 	}
-	
 }
 
 void AQbaCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
-	AbilitySystem->InitAbilityActorInfo(this, this);
-
-	AbilitySystem->RefreshAbilityActorInfo();
+	if (AbilitySystem)
+	{
+		AbilitySystem->InitAbilityActorInfo(this, this);
+		AbilitySystem->RefreshAbilityActorInfo();
+	}
 }
 
 UAbilitySystemComponent* AQbaCharacter::GetAbilitySystemComponent() const
@@ -60,148 +64,111 @@ void AQbaCharacter::Tick(float DeltaTime)
 
 void AQbaCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
-	TObjectPtr<UQbaEnhancedInputComponent> EnhancedInputComponent = Cast<UQbaEnhancedInputComponent>(PlayerInputComponent);
-	TObjectPtr<UQbaAssetManager> AssetManager = Cast<UQbaAssetManager>(GEngine->AssetManager);
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	check(PlayerInputComponent);
 
-	check(EnhancedInputComponent);
-	check(InputConfig);
-	check (AssetManager);
+	TObjectPtr<APlayerController> PlayerController = Cast<APlayerController>(GetController());
+	TObjectPtr<UEnhancedInputLocalPlayerSubsystem> EnhancedSubsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer());
 
-	InputTags = AssetManager->GetInputTags();
-	AbilityTags = AssetManager->GetAbilityTags();
+	EnhancedSubsystem->ClearAllMappings();
+	EnhancedSubsystem->AddMappingContext(DefaultMappingContext, 0);
+	TObjectPtr<UEnhancedInputComponent> EnhancedInput = Cast<UEnhancedInputComponent>(PlayerInputComponent);
 
-	EnhancedInputComponent->BindActionByTag(InputConfig, InputTags.InputTag_Move, ETriggerEvent::Triggered, this, &AQbaCharacter::Input_Move);
-	EnhancedInputComponent->BindActionByTag(InputConfig, InputTags.InputTag_Look_Mouse, ETriggerEvent::Triggered, this, &AQbaCharacter::Input_Look);
-	EnhancedInputComponent->BindActionByTag(InputConfig, InputTags.InputTag_Look_Gamepad, ETriggerEvent::Triggered, this, &AQbaCharacter::Input_Look_Gamepad);
-	EnhancedInputComponent->BindActionByTag(InputConfig, InputTags.InputTag_Fire, ETriggerEvent::Triggered, this, &AQbaCharacter::Input_Fire);
-	EnhancedInputComponent->BindActionByTag(InputConfig, InputTags.InputTag_Jump, ETriggerEvent::Triggered, this, &AQbaCharacter::Input_Jump);
-	EnhancedInputComponent->BindActionByTag(InputConfig, InputTags.InputTag_Aim, ETriggerEvent::Triggered, this, &AQbaCharacter::Input_Aim);
-	EnhancedInputComponent->BindActionByTag(InputConfig, InputTags.InputTag_AbilityWheel, ETriggerEvent::Triggered, this, &AQbaCharacter::Input_AbilityWheel);
-
+	if (EnhancedInput && InputConfig)
+	{
+		EnhancedInput->BindAction(InputConfig->InputMove, ETriggerEvent::Triggered, this, &AQbaCharacter::Input_Move);
+		EnhancedInput->BindAction(InputConfig->InputLook, ETriggerEvent::Triggered, this, &AQbaCharacter::Input_Look);
+		EnhancedInput->BindAction(InputConfig->InputFire, ETriggerEvent::Triggered, this, &AQbaCharacter::Input_Fire);
+		EnhancedInput->BindAction(InputConfig->InputAim, ETriggerEvent::Triggered, this, &AQbaCharacter::Input_Aim);
+		EnhancedInput->BindAction(InputConfig->InputJump, ETriggerEvent::Triggered, this, &AQbaCharacter::Input_Jump);
+	}
 }
 
 void AQbaCharacter::Input_Move(const FInputActionValue& InputActionValue)
 {
-	if (!Controller) 
-	{ 
-		return;
-	}
-	const FVector2D AxisValue = InputActionValue.Get<FInputActionValue::Axis2D>();
-	const FRotator ControllerRotation = FRotator(0.0f, Controller->GetControlRotation().Yaw, 0.0f);
-
-	if (AxisValue.X != 0.0f)
+	if (Controller)
 	{
-		const FVector MovementDirection = ControllerRotation.RotateVector(FVector::RightVector);
-		AddMovementInput(MovementDirection, AxisValue.X);
-	}
+		const FVector2D MoveValue = InputActionValue.Get<FVector2D>();
+		const FRotator MovementRotation(0, Controller->GetControlRotation().Yaw, 0);
 
-	if (AxisValue.Y != 0.0f)
-	{
-		const FVector MovementDirection = ControllerRotation.RotateVector(FVector::ForwardVector);
-		AddMovementInput(MovementDirection, AxisValue.Y);
+		if (MoveValue.Y != 0.f)
+		{
+			const FVector Direction = MovementRotation.RotateVector(FVector::ForwardVector);
+			AddMovementInput(Direction, MoveValue.Y);
+		}
+
+		if (MoveValue.X != 0.f)
+		{
+			const FVector Direction = MovementRotation.RotateVector(FVector::RightVector);
+			AddMovementInput(Direction, MoveValue.X);
+		}
 	}
 }
 
 void AQbaCharacter::Input_Look(const FInputActionValue& InputActionValue)
 {
-	if (!Controller) 
+	if (Controller)
 	{
-		return; 
-	}
+		const FVector2D LookValue = InputActionValue.Get<FVector2D>();
 
-	FVector2D AxisValue = InputActionValue.Get<FInputActionValue::Axis2D>();
+		if (LookValue.X != 0.f)
+		{
+			AddControllerYawInput(LookValue.X);
+		}
 
-	if (AxisValue.X != 0.0f)
-	{
-		TurnAtRate(AxisValue.X, MouseLookRate);
-	}
-
-	if (AxisValue.Y != 0.0f)
-	{
-		LookUpAtRate(AxisValue.Y, MouseLookRate);
-	}
-}
-
-void AQbaCharacter::Input_Look_Gamepad(const FInputActionValue& InputActionValue)
-{
-	if (!Controller) 
-	{
-		return; 
-	}
-
-	FVector2D AxisValue = InputActionValue.Get<FInputActionValue::Axis2D>();
-
-	if (AxisValue.X != 0.0f)
-	{
-		TurnAtRate(AxisValue.X, GamepadLookRate);
-	}
-
-	if (AxisValue.Y != 0.0f)
-	{
-		LookUpAtRate(AxisValue.Y, GamepadLookRate);
+		if (LookValue.Y != 0.f)
+		{
+			AddControllerPitchInput(LookValue.Y);
+		}
 	}
 }
 
 void AQbaCharacter::Input_Jump(const FInputActionValue& InputActionValue)
 {
-	//NOTE: In order to use Button, pls uncomment a line in FInputActionValue
-	bool bInputAllowJump = InputActionValue.Get<FInputActionValue::Button>();
-	bool bIsGrounded = this->GetCharacterMovement()->IsMovingOnGround();
-	
-	if (bInputAllowJump && bIsGrounded)
+	if (JumpAbility && AbilitySystem)
 	{
-		FGameplayTagContainer JumpTagContainer(AbilityTags.AbilityTag_Jump);
-		AbilitySystem->TryActivateAbilitiesByTag(JumpTagContainer);
+		const bool bInputAllowJump = InputActionValue.Get<FInputActionValue::Button>();
+		const bool bIsGrounded = GetCharacterMovement()->IsMovingOnGround();
 
-		AbilitySystem->PressInputID(1);
+		if (bInputAllowJump && bIsGrounded)
+		{
+			AbilitySystem->TryActivateAbilityByClass(JumpAbility);
+			UE_LOG(LogTemp, Warning, TEXT("GetStamina good: %f"), AbilitySystem->GetNumericAttribute(BasicAttributes->GetStaminaAttribute()));
+			UE_LOG(LogTemp, Warning, TEXT("max good: %f"), AbilitySystem->GetNumericAttribute(BasicAttributes->GetMaxStaminaAttribute()));
+		}
 	}
 }
 
 void AQbaCharacter::Input_Fire(const FInputActionValue& InputActionValue)
 {
-	float AxisValue = InputActionValue.Get<FInputActionValue::Axis1D>();
+	const float AxisValue = InputActionValue.Get<FInputActionValue::Axis1D>();
 }
 
 void AQbaCharacter::Input_Aim(const FInputActionValue& InputActionValue)
 {
-	float AxisValue = InputActionValue.Get<FInputActionValue::Axis1D>();
-}
-
-void AQbaCharacter::Input_AbilityWheel(const FInputActionValue& InputActionValue)
-{
-	bool BoolValue = InputActionValue.Get<FInputActionValue::Button>();
-}
-
-void AQbaCharacter::TurnAtRate(float Value, float Rate)
-{
-	AddControllerYawInput(Value * Rate * GetWorld()->GetDeltaSeconds());
-}
-
-void AQbaCharacter::LookUpAtRate(float Value, float Rate)
-{
-	AddControllerPitchInput(Value * Rate * GetWorld()->GetDeltaSeconds());
+	const float AxisValue = InputActionValue.Get<FInputActionValue::Axis1D>();
 }
 
 
 void AQbaCharacter::OnStaminaUpdated(const FOnAttributeChangeData& Data)
 {
-	OnStaminaChange.Broadcast(Data.NewValue, GetMaxStamina());
+	StaminaUpdated.Broadcast(Data.NewValue, GetMaxStamina());
 }
 
 float AQbaCharacter::GetMaxStamina() const
 { 
-	if (!AbilitySystem) 
+	if (AbilitySystem) 
 	{ 
-		return 0.f; 
+		return  AbilitySystem->GetNumericAttribute(BasicAttributes->GetMaxStaminaAttribute());
 	}
-	return  AbilitySystem->GetNumericAttribute(BasicAttributes->GetMaxStaminaAttribute()); 
+	return 0.f;
 }
 
 float AQbaCharacter::GetStamina() const
 {
-	if (!AbilitySystem)
+	if (AbilitySystem)
 	{
-		return 0.f;
+		return  AbilitySystem->GetNumericAttribute(BasicAttributes->GetStaminaAttribute());
 	}
-	return  AbilitySystem->GetNumericAttribute(BasicAttributes->GetStaminaAttribute());
+	return 0.f;
 }
