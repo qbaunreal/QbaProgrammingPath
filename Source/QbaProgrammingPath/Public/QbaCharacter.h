@@ -13,11 +13,37 @@ class UAbilitySystemComponent;
 class UGameplayAbility;
 class UInputMappingContext;
 class UQbaAttributeSet_Basic;
+class USpringArmComponent;
+class UCameraComponent;
 struct FOnAttributeChangeData;
 struct FInputActionValue;
 
+USTRUCT(BlueprintType)
+struct FPlayerAbilities
+{
+	GENERATED_BODY()
+public:
+	UPROPERTY(VisibleDefaultsOnly, Category = "Abilities")
+	TObjectPtr<UAbilitySystemComponent> AbilitySystem{ nullptr };
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Abilities", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UGameplayAbility> JumpAbility;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Abilities", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UGameplayAbility> SprintAbility;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Abilities", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UGameplayAbility> DashAbility;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Abilities", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UGameplayAbility> BallThrowAbility;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Abilities", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<UGameplayAbility> CrouchAbility;
+};
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnStaminaUpdated, float, StaminaValue, float, MaxStaminaValue);
+DECLARE_LOG_CATEGORY_EXTERN(QbaAbilities, Log, All);
 
 UCLASS()
 class QBAPROGRAMMINGPATH_API AQbaCharacter : public ACharacter, public IAbilitySystemInterface
@@ -52,23 +78,18 @@ private:
 
 	float StaminaValue{0.f};
 	float MaxStaminaValue{0.f};
-	const float StartingStamina{ 200.f }; //workaround for issue with DataTable
-
+	const float StartingStamina{ 200.f }; 
 
 	void Input_Move(const FInputActionValue& InputActionValue);
 	void Input_Look(const FInputActionValue& InputActionValue);
 	void Input_Jump(const FInputActionValue& InputActionValue);
-	void Input_Fire(const FInputActionValue& InputActionValue);
-	void Input_Aim(const FInputActionValue& InputActionValue);
+	void Input_Dash(const FInputActionValue& InputActionValue);
+	void Input_Sprint(const FInputActionValue& InputActionValue);
+	void Input_BallThrow(const FInputActionValue& InputActionValue);
+	void Input_Crouch(const FInputActionValue& InputActionValue);
 
+	void GrantDefaultAbilities();
 
-	UPROPERTY(VisibleDefaultsOnly, Category = "Abilities")
-	TObjectPtr<UAbilitySystemComponent> AbilitySystem{ nullptr };
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Abilities", meta = (AllowPrivateAccess = "true"))
-	TSubclassOf<UGameplayAbility> JumpAbility;
-
-	TObjectPtr<UQbaAttributeSet_Basic> BasicAttributes{ nullptr };
 
 
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
@@ -77,7 +98,15 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Input")
 	TObjectPtr<UQbaInputConfig> InputConfig{ nullptr };
 
-	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Abilities", meta = (AllowPrivateAccess = "true"))
+	FPlayerAbilities Abilities{};
 
+	TObjectPtr<UQbaAttributeSet_Basic> BasicAttributes{ nullptr };
+	
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<USpringArmComponent> SpringArm{ nullptr };
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<UCameraComponent> Camera{ nullptr };
 };
 

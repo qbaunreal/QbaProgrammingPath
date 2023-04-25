@@ -56,22 +56,4 @@ public:
 	void SetMaxStamina(float NewMaxStaminaValue);
 	GAMEPLAYATTRIBUTE_VALUE_INITTER(MaxStamina);
 
-
-	/** Character Current Mana */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mana")
-	FGameplayAttributeData Mana;
-
-	GAMEPLAYATTRIBUTE_PROPERTY_GETTER(UQbaAttributeSet_Basic, Mana);
-	float GetMana() const;
-	void SetMana(float NewManaValue);
-	GAMEPLAYATTRIBUTE_VALUE_INITTER(Mana);
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mana")
-	FGameplayAttributeData MaxMana;
-
-	GAMEPLAYATTRIBUTE_PROPERTY_GETTER(UQbaAttributeSet_Basic, MaxMana);
-	float GetMaxMana() const;
-	void SetMaxMana(float NewMaxManaValue);
-	GAMEPLAYATTRIBUTE_VALUE_INITTER(MaxMana);
-
 };

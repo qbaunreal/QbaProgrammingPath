@@ -96,39 +96,3 @@ void UQbaAttributeSet_Basic::SetMaxStamina(float NewMaxStaminaValue)
 		AbilityComponent->SetNumericAttributeBase(GetMaxStaminaAttribute(), NewMaxStaminaValue);;
 	}
 }
-
-/** Mana Getters */
-float UQbaAttributeSet_Basic::GetMana() const
-{
-	return FMath::Max(Mana.GetCurrentValue(), 0.0f);
-}
-
-void UQbaAttributeSet_Basic::SetMana(float NewManaValue)
-{
-	NewManaValue = FMath::Clamp(NewManaValue, 0.f, GetMaxStamina());
-
-	UAbilitySystemComponent* AbilityComponent = GetOwningAbilitySystemComponent();
-
-	if (AbilityComponent)
-	{
-		AbilityComponent->SetNumericAttributeBase(GetManaAttribute(), NewManaValue);
-	}
-}
-
-/** Max Mana Getters*/
-float UQbaAttributeSet_Basic::GetMaxMana() const
-{
-	return FMath::Max(MaxMana.GetCurrentValue(), 0.0f);
-}
-
-void UQbaAttributeSet_Basic::SetMaxMana(float NewMaxManaValue)
-{
-	NewMaxManaValue = FMath::Max(NewMaxManaValue, 0.f);
-
-	UAbilitySystemComponent* AbilityComponent = GetOwningAbilitySystemComponent();
-
-	if (AbilityComponent)
-	{
-		AbilityComponent->SetNumericAttributeBase(GetMaxManaAttribute(), NewMaxManaValue);
-	}
-}

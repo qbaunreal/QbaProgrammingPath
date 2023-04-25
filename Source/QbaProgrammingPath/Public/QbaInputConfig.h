@@ -24,8 +24,14 @@ public:
 	TObjectPtr<UInputAction> InputJump;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TObjectPtr<UInputAction> InputAim;
+	TObjectPtr<UInputAction> InputDash;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TObjectPtr<UInputAction> InputFire;
+	TObjectPtr<UInputAction> InputSprint;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TObjectPtr<UInputAction> InputBallThrow;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TObjectPtr<UInputAction> InputCrouch;
 };
