@@ -11,11 +11,11 @@ AQbaMovingPlatform::AQbaMovingPlatform()
 
 void AQbaMovingPlatform::BeginPlay()
 {
+	Super::BeginPlay();
 	if (HasAuthority())
 	{
 		SetReplicates(true);
 		SetReplicateMovement(true);
-		SetActorTickEnabled(false);
 
 		WorldStartLocation = GetActorLocation();
 		WorldTargetLocation = GetTransform().TransformPosition(TargetLocation);
@@ -24,6 +24,7 @@ void AQbaMovingPlatform::BeginPlay()
 
 void AQbaMovingPlatform::Tick(float DeltaTime)
 {
+	Super::Tick(DeltaTime);
 	MoveForward(DeltaTime);
 }
 
