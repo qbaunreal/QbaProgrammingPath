@@ -15,8 +15,6 @@ public:
 
 	// Delete all necessary assets, finish test logic
 	virtual bool FinishTest() override;
-
-	bool bFinishTest{ false };
 };
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FQbaTestCommand, FQbaPhysicsConstraintsTest*, Test);
