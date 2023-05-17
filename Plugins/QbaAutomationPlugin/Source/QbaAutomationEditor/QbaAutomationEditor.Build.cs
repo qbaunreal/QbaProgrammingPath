@@ -13,7 +13,7 @@ public class QbaAutomationEditor : ModuleRules
 			new string[]
 			{
 				"Core",
-                "QbaAutomationPlugin"
+                "QbaAutomationPlugin",
             }
 			);
 			
@@ -25,9 +25,10 @@ public class QbaAutomationEditor : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
-                "QbaAutomationPlugin"
+                "QbaAutomationPlugin",
+                "EditorSubsystem",
+				"UnrealEd"
             }
 			);
-		
-	}
+    }
 }

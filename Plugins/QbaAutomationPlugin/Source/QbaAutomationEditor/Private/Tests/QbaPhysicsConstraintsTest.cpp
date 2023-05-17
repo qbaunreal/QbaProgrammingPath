@@ -1,13 +1,18 @@
 // Copyright Jakub Urbanek. All Rights Reserved.
 
 #include "QbaPhysicsConstraintsTest.h"
+#include "ActorFactories/ActorFactory.h"
 
 
-IMPLEMENT_QBA_LATENT_TEST(FQbaPhysicsConstraintsTest, "Qba.Editor.ConstraintsTest", EAutomationTestFlags::EditorContext | EAutomationTestFlags::CriticalPriority | EAutomationTestFlags::EngineFilter);
+IMPLEMENT_QBA_LATENT_TEST(FQbaPhysicsConstraintsTest, "Qba.Editor.ConstraintsTest", EAutomationTestFlags::EditorContext | EAutomationTestFlags::MediumPriority | EAutomationTestFlags::SmokeFilter);
 
 
 bool FQbaPhysicsConstraintsTest::PrepareTest()
 {
+	//1. Check if there are assets already in the folder, if so. try to delete them
+	//2. Create actor
+	//3. Set it's params
+
 	UE_LOG(LogQbaAutomation, Warning, TEXT("Prepare assets"));
 	return true;
 }
@@ -15,9 +20,10 @@ bool FQbaPhysicsConstraintsTest::PrepareTest()
 bool FQbaPhysicsConstraintsTest::RunTestLogic()
 {
 	UE_LOG(LogQbaAutomation, Warning, TEXT("Runlogic assets"));
-	ADD_LATENT_AUTOMATION_COMMAND(FQbaTestCommand(this));
+	ADD_LATENT_AUTOMATION_COMMAND(SpawnTestBlueprints(this));
 	ADD_LATENT_AUTOMATION_COMMAND(FWaitLatentCommand(5.f));
-	ADD_LATENT_AUTOMATION_COMMAND(FQbaTestCommand2(this));
+	ADD_LATENT_AUTOMATION_COMMAND(SaveSpawnedBlueprints(this));
+	ADD_LATENT_AUTOMATION_COMMAND(FWaitLatentCommand(5.f));
 	
 	return true;
 }
@@ -25,18 +31,32 @@ bool FQbaPhysicsConstraintsTest::RunTestLogic()
 bool FQbaPhysicsConstraintsTest::FinishTest()
 {
 	UE_LOG(LogQbaAutomation, Warning, TEXT("Finishing test"));
+	return FQbaTestRunnerBase::FinishTest();;
+}
+
+bool SpawnTestBlueprints::Update()
+{
+	UE_LOG(LogQbaAutomation, Warning, TEXT("Creating asset"));
+	
+	for (int32 i = 0; i < 10; i++) // for tests
+	{
+		FQbaTestHelpers::FBlueprintCreation BlueprintCreation;
+		BlueprintCreation.AssetClass = AActor::StaticClass();
+		BlueprintCreation.AssetName = FString::Printf(TEXT("TestAsset%i"), i);
+		BlueprintCreation.AssetPath = FQbaTestHelpers::GetPathForAsset(FString(TEXT("ConstraintTest")));
+
+		TObjectPtr<UObject>CreatedObject = FQbaTestHelpers::CreateBlueprint(BlueprintCreation);
+		if (CreatedObject)
+		{
+			Test->AddAssetToTestAssets(CreatedObject);
+		}
+	}
 	return true;
 }
 
-bool FQbaTestCommand::Update()
+bool SaveSpawnedBlueprints::Update()
 {
-	UE_LOG(LogQbaAutomation, Warning, TEXT("Running Test command1"));
-	return true;
-}
-
-bool FQbaTestCommand2::Update()
-{
-	UE_LOG(LogQbaAutomation, Warning, TEXT("Running test command2"));
+	Test->SaveAllTestAssets();
 	return true;
 }
 

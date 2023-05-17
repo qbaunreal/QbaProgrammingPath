@@ -17,6 +17,6 @@ public:
 	virtual bool FinishTest() override;
 };
 
-DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FQbaTestCommand, FQbaPhysicsConstraintsTest*, Test);
-DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(FQbaTestCommand2, FQbaPhysicsConstraintsTest*, Test);
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(SpawnTestBlueprints, FQbaPhysicsConstraintsTest*, Test);
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(SaveSpawnedBlueprints, FQbaPhysicsConstraintsTest*, Test);
 
