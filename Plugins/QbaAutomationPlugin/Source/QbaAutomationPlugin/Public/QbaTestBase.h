@@ -32,46 +32,41 @@ DEFINE_LOG_CATEGORY(LogQbaAutomation);
 // NOTE: The idea/shape of this base was originating from AITestsCommon.h + EditorAssetAutomationTests.cpp to not reinvent the wheel
 
 PRAGMA_DISABLE_OPTIMIZATION
-namespace FQbaTestHelpers
+namespace QBATESTS_API FQbaTestHelpers
 {
-	// Only need to Specify Asset Class, Factory, Name and path
-	struct FAssetCreation
+	struct FAssetCreationData
 	{
-		FAssetCreation()
-			: AssetClass(nullptr), Factory(nullptr), AssetPackage(nullptr), AssetName(FString(TEXT(""))), AssetPath(FString(TEXT(""))){}
-
 		UClass* AssetClass{nullptr};
 		UFactory* Factory{ nullptr };
-		UPackage* AssetPackage{ nullptr };
 		FString AssetName{ FString(TEXT("")) };
 		FString AssetPath{FString(TEXT(""))};
 
 	};
 
-	static TObjectPtr<UObject> CreateAsset(FAssetCreation& AssetCreation)
+	static TObjectPtr<UObject> CreateAsset(const FAssetCreationData& AssetCreationData, UPackage* OutPackage)
 	{
 #if WITH_EDITOR
-		if (!AssetCreation.AssetClass || !AssetCreation.Factory)
+		if (!AssetCreationData.AssetClass || !AssetCreationData.Factory)
 		{
 			UE_LOG(LogQbaAutomation, Error, TEXT("Provided null class or factory for asset creation, aborting asset creation."));
 			return nullptr;
 		}
-		const FString PackageName = AssetCreation.AssetPath + TEXT("/") + AssetCreation.AssetName;
-		AssetCreation.AssetPackage = CreatePackage(*PackageName);
+		const FString PackageName = AssetCreationData.AssetPath + TEXT("/") + AssetCreationData.AssetName;
+		OutPackage = CreatePackage(*PackageName);
 		EObjectFlags Flags = RF_Public | RF_Standalone;
 		
-		TObjectPtr<UObject> CreatedAsset = AssetCreation.Factory->FactoryCreateNew(AssetCreation.AssetClass, AssetCreation.AssetPackage, FName(*AssetCreation.AssetName), Flags, NULL, GWarn);
+		TObjectPtr<UObject> CreatedAsset = AssetCreationData.Factory->FactoryCreateNew(AssetCreationData.AssetClass, OutPackage, FName(*AssetCreationData.AssetName), Flags, NULL, GWarn);
 
 		if (CreatedAsset)
 		{
 			FAssetRegistryModule::AssetCreated(CreatedAsset);
-			AssetCreation.AssetPackage->MarkPackageDirty();
-			UE_LOG(LogQbaAutomation, VeryVerbose, TEXT("Asset %s correctly created"), *AssetCreation.AssetName);
+			OutPackage->MarkPackageDirty();
+			UE_LOG(LogQbaAutomation, VeryVerbose, TEXT("Asset %s correctly created"), *AssetCreationData.AssetName);
 			return CreatedAsset;
 		}
 		else
 		{
-			UE_LOG(LogQbaAutomation, Error, TEXT("Could not create %s asset"), *AssetCreation.AssetClass->GetName());
+			UE_LOG(LogQbaAutomation, Error, TEXT("Could not create %s asset"), *AssetCreationData.AssetClass->GetName());
 		}
 #else
 		UE_LOG(LogQbaAutomation, Error, TEXT("Cannot create new assets outside of editor"));
@@ -79,40 +74,28 @@ namespace FQbaTestHelpers
 		return nullptr;
 	};
 
-	// Only need to Specify Asset Class, Name and path
-	struct FBlueprintCreation
+	/* Factory isn't necessary when calling CreateBlueprint function */
+	static TObjectPtr<UObject> CreateBlueprint(const FAssetCreationData& AssetCreationData, UPackage* OutPackage)
 	{
-		FBlueprintCreation()
-			: AssetClass(nullptr), Package(nullptr), AssetName(FString(TEXT(""))), AssetPath(FString(TEXT(""))) {}
-
-		UClass* AssetClass{ nullptr };
-		UPackage* Package{ nullptr };
-		FString AssetName{ FString(TEXT("")) };
-		FString AssetPath{ FString(TEXT("")) };
-
-	};
-	static TObjectPtr<UObject> CreateBlueprint(FBlueprintCreation& BlueprintCreation)
-	{
-//#if WITH_EDITOR
-		if (!BlueprintCreation.AssetClass)
+#if WITH_EDITOR
+		if (!AssetCreationData.AssetClass)
 		{
 			UE_LOG(LogQbaAutomation, Error, TEXT("Provided null class for blueprint creation, aborting blueprint creation."));
 		}
-		const FString PackageName = BlueprintCreation.AssetPath + TEXT("/") + BlueprintCreation.AssetName;
-		BlueprintCreation.Package = CreatePackage(*PackageName);
+		const FString PackageName = AssetCreationData.AssetPath + TEXT("/") + AssetCreationData.AssetName;
+		OutPackage = CreatePackage(*PackageName);
 
-		if (BlueprintCreation.Package)
+		if (OutPackage)
 		{
-			const FName BlueprintName = MakeUniqueObjectName(BlueprintCreation.Package, BlueprintCreation.AssetClass, FName(*BlueprintCreation.AssetName));
+			const FName BlueprintName = MakeUniqueObjectName(OutPackage, AssetCreationData.AssetClass, FName(*AssetCreationData.AssetName));
 
-			UBlueprint* CreatedBlueprint = FKismetEditorUtilities::CreateBlueprint(BlueprintCreation.AssetClass, BlueprintCreation.Package, BlueprintName, BPTYPE_Normal, UBlueprint::StaticClass(), UBlueprintGeneratedClass::StaticClass());
+			UBlueprint* CreatedBlueprint = FKismetEditorUtilities::CreateBlueprint(AssetCreationData.AssetClass, OutPackage, BlueprintName, BPTYPE_Normal, UBlueprint::StaticClass(), UBlueprintGeneratedClass::StaticClass());
 			if (CreatedBlueprint)
 			{
 				UE_LOG(LogQbaAutomation, VeryVerbose, TEXT("Succesully created new blueprint"));
 				CreatedBlueprint->SetFlags(RF_Public | RF_Standalone);
 				FAssetRegistryModule::AssetCreated(CreatedBlueprint);
-				BlueprintCreation.Package->MarkPackageDirty();
-
+				OutPackage->MarkPackageDirty();
 				return CreatedBlueprint;
 			}
 			else
@@ -121,9 +104,9 @@ namespace FQbaTestHelpers
 				return nullptr;
 			}
 		}
-//#else
-//		UE_LOG(LogQbaAutomation, Error, TEXT("Cannot create new assets outside of editor"));
-//#endif // WITH_EDITOR
+#else
+		UE_LOG(LogQbaAutomation, Error, TEXT("Cannot create new assets outside of editor"));
+#endif // WITH_EDITOR
 		return nullptr;
 	}
 
@@ -209,10 +192,7 @@ PRAGMA_ENABLE_OPTIMIZATION
 
 struct QBATESTS_API FQbaTestBase
 {
-	FAutomationTestBase* TestRunner;
-
-	FQbaTestBase()
-		: TestRunner(nullptr){}
+	FAutomationTestBase* TestRunner{nullptr};
 
 	FORCEINLINE FAutomationTestBase& GetTestRunner() const { check(TestRunner); return *TestRunner; }
 	

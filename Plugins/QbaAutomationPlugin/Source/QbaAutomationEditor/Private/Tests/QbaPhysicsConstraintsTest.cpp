@@ -40,12 +40,14 @@ bool SpawnTestBlueprints::Update()
 	
 	for (int32 i = 0; i < 10; i++) // for tests
 	{
-		FQbaTestHelpers::FBlueprintCreation BlueprintCreation;
-		BlueprintCreation.AssetClass = AActor::StaticClass();
-		BlueprintCreation.AssetName = FString::Printf(TEXT("TestAsset%i"), i);
-		BlueprintCreation.AssetPath = FQbaTestHelpers::GetPathForAsset(FString(TEXT("ConstraintTest")));
+		FQbaTestHelpers::FAssetCreationData AssetCreationData;
+		AssetCreationData.AssetClass = AActor::StaticClass();
+		AssetCreationData.AssetName = FString::Printf(TEXT("TestAsset%i"), i);
+		AssetCreationData.AssetPath = FQbaTestHelpers::GetPathForAsset(FString(TEXT("ConstraintTest")));
 
-		TObjectPtr<UObject>CreatedObject = FQbaTestHelpers::CreateBlueprint(BlueprintCreation);
+		UPackage* AssetPackage{ nullptr };
+
+		TObjectPtr<UObject>CreatedObject = FQbaTestHelpers::CreateBlueprint(AssetCreationData, AssetPackage);
 		if (CreatedObject)
 		{
 			Test->AddAssetToTestAssets(CreatedObject);
