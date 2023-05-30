@@ -43,7 +43,7 @@ namespace QBATESTS_API FQbaTestHelpers
 
 	};
 
-	static TObjectPtr<UObject> CreateAsset(const FAssetCreationData& AssetCreationData, UPackage* OutPackage)
+	static TObjectPtr<UObject> CreateAsset(const FAssetCreationData& AssetCreationData, UPackage*& OutPackage)
 	{
 #if WITH_EDITOR
 		if (!AssetCreationData.AssetClass || !AssetCreationData.Factory)
@@ -75,7 +75,7 @@ namespace QBATESTS_API FQbaTestHelpers
 	};
 
 	/* Factory isn't necessary when calling CreateBlueprint function */
-	static TObjectPtr<UObject> CreateBlueprint(const FAssetCreationData& AssetCreationData, UPackage* OutPackage)
+	static TObjectPtr<UObject> CreateBlueprint(const FAssetCreationData& AssetCreationData, UPackage*& OutPackage)
 	{
 #if WITH_EDITOR
 		if (!AssetCreationData.AssetClass)
@@ -184,17 +184,50 @@ namespace QBATESTS_API FQbaTestHelpers
 		return false;
 	};
 
-
 	static FString DefaultAssetPath{ FString(TEXT("/Game/QbaAutomation")) };
 	static FString GetPathForAsset(const FString& TestName, const FString& TargetPath = DefaultAssetPath) { return FString::Printf(TEXT("%s/%s_Test"), *TargetPath, *TestName); };
+
+	/* Deletes directory and all assets*/
+	static bool DeleteTestDirectory(const FString& Directory = DefaultAssetPath)
+	{
+#if WITH_EDITOR
+
+		bool bDirectoryWasRemoved{ false };
+		FString PathToDeleteOnDisk{ FString(TEXT("")) };
+
+		if (FPackageName::TryConvertLongPackageNameToFilename(Directory, PathToDeleteOnDisk))
+		{
+			bDirectoryWasRemoved = IFileManager::Get().DeleteDirectory(*PathToDeleteOnDisk, false, true);
+		}
+
+		else
+		{
+			UE_LOG(LogQbaAutomation, Error, TEXT("Folder deletion failed. Could not convert the path. %s"), *Directory);
+		}
+
+		if (bDirectoryWasRemoved)
+		{
+			FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>(TEXT("AssetRegistry"));
+			AssetRegistryModule.Get().RemovePath(Directory);
+			return true;
+		}
+#else
+		UE_LOG(LogQbaAutomation, Error, TEXT("Cannot delete directory in non editor context!"));
+#endif // WITH_EDITOR
+		return false;
+	};
 }
-PRAGMA_ENABLE_OPTIMIZATION
+
 
 struct QBATESTS_API FQbaTestBase
 {
 	FAutomationTestBase* TestRunner{nullptr};
-
 	FORCEINLINE FAutomationTestBase& GetTestRunner() const { check(TestRunner); return *TestRunner; }
+
+	FORCEINLINE const FString& GetAssetSaveLocation() const { return AssetSaveLocation; }
+	void SetAssetSaveLocation() { AssetSaveLocation = FQbaTestHelpers::GetPathForAsset(GetTestRunner().GetTestName()); };
+
+	FString AssetSaveLocation{ FString(TEXT("")) };
 	
 	FORCEINLINE const TArray<TObjectPtr<UObject>>& GetTestAssets() const { return TestAssets; }
 	FORCEINLINE void AddAssetToTestAssets(const TObjectPtr<UObject> AssetToAdd) { TestAssets.Add(AssetToAdd); }
@@ -226,9 +259,9 @@ struct QBATESTS_API FQbaTestBase
 				bSuccessDeleteAssets = false;
 			}
 			GetTestRunner().TestTrue(TEXT("Delete all assets: "), bSuccessDeleteAssets);
-
-			//TODO: Delete directory
 		}
+
+		FQbaTestHelpers::DeleteTestDirectory();
 		return bSuccessDeleteAssets;
 	};
 
@@ -240,13 +273,14 @@ public:
 	virtual ~FQbaTestBase() {};
 
 	// Check if initialized properly, loading environment, required assets etc.
-	virtual bool PrepareTest() { return false; }
+	virtual bool PrepareTest() { FQbaTestHelpers::DeleteTestDirectory(); return true; }
 
 	// Run logic of your test here 
-	virtual bool RunTestLogic() { return false; }
+	virtual bool RunTestLogic() { return true; }
 
 	// Delete all necessary assets, finish test logic
 	virtual bool FinishTest() {  DeleteAllTestAssets(); return true; }
+
 
 };
 
@@ -266,6 +300,7 @@ bool TestClass##_Runner::RunTest(const FString& Parameters) \
 	bool bTestSuccess {false}; \
 	TestClass* TestInstance = new TestClass(); \
 	TestInstance->SetTestRunner(*this); \
+	TestInstance->SetAssetSaveLocation(); \
 	if (TestInstance) \
 	{ \
 		bTestSuccess = TestInstance->PrepareTest(); \
@@ -291,6 +326,7 @@ bool TestClass##_Runner::RunTest(const FString& Parameters) \
 		bool bTestSuccess {false}; \
 		TestClass* TestInstance = new TestClass(); \
 		TestInstance->SetTestRunner(*this); \
+		TestInstance->SetAssetSaveLocation(); \
 		bTestSuccess = TestInstance->PrepareTest();\
 		if (bTestSuccess)\
 		{\
@@ -305,3 +341,5 @@ bool FQbaFinishTest::Update()
 {
 	return QbaTest && QbaTest->FinishTest();
 }
+
+PRAGMA_ENABLE_OPTIMIZATION

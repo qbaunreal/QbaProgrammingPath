@@ -9,6 +9,7 @@ IMPLEMENT_QBA_LATENT_TEST(FQbaPhysicsConstraintsTest, "Qba.Editor.ConstraintsTes
 
 bool FQbaPhysicsConstraintsTest::PrepareTest()
 {
+	FQbaTestRunnerBase::PrepareTest();
 	//1. Check if there are assets already in the folder, if so. try to delete them
 	//2. Create actor
 	//3. Set it's params
@@ -19,6 +20,8 @@ bool FQbaPhysicsConstraintsTest::PrepareTest()
 
 bool FQbaPhysicsConstraintsTest::RunTestLogic()
 {
+	FQbaTestRunnerBase::RunTestLogic();
+
 	UE_LOG(LogQbaAutomation, Warning, TEXT("Runlogic assets"));
 	ADD_LATENT_AUTOMATION_COMMAND(SpawnTestBlueprints(this));
 	ADD_LATENT_AUTOMATION_COMMAND(FWaitLatentCommand(5.f));
@@ -33,7 +36,7 @@ bool FQbaPhysicsConstraintsTest::FinishTest()
 	UE_LOG(LogQbaAutomation, Warning, TEXT("Finishing test"));
 	return FQbaTestRunnerBase::FinishTest();;
 }
-
+PRAGMA_DISABLE_OPTIMIZATION
 bool SpawnTestBlueprints::Update()
 {
 	UE_LOG(LogQbaAutomation, Warning, TEXT("Creating asset"));
@@ -43,7 +46,7 @@ bool SpawnTestBlueprints::Update()
 		FQbaTestHelpers::FAssetCreationData AssetCreationData;
 		AssetCreationData.AssetClass = AActor::StaticClass();
 		AssetCreationData.AssetName = FString::Printf(TEXT("TestAsset%i"), i);
-		AssetCreationData.AssetPath = FQbaTestHelpers::GetPathForAsset(FString(TEXT("ConstraintTest")));
+		AssetCreationData.AssetPath = Test->GetAssetSaveLocation();
 
 		UPackage* AssetPackage{ nullptr };
 
@@ -62,3 +65,5 @@ bool SaveSpawnedBlueprints::Update()
 	return true;
 }
 
+
+PRAGMA_ENABLE_OPTIMIZATION
