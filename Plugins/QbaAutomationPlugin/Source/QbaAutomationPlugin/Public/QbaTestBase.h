@@ -32,7 +32,7 @@ DEFINE_LOG_CATEGORY(LogQbaAutomation);
 
 
 PRAGMA_DISABLE_OPTIMIZATION
-namespace QBATESTS_API FQbaTestHelpers
+namespace QBATESTS_API FQbaTestHelpers //TODO move helpers to other file.
 {
 	struct FAssetCreationData
 	{

@@ -10,6 +10,8 @@
 #include "Kismet2/BlueprintEditorUtils.h"
 #include "EdGraphSchema_K2.h"
 #include "QbaBlueprintHelpers.h"
+#include "Engine/SCS_Node.h"
+#include "PhysicsEngine/PhysicsConstraintComponent.h"
 
 
 IMPLEMENT_QBA_LATENT_TEST(FQbaPhysicsConstraintsTest, "Qba.Editor.ConstraintsTest", EAutomationTestFlags::EditorContext | EAutomationTestFlags::MediumPriority | EAutomationTestFlags::SmokeFilter);
@@ -42,7 +44,7 @@ bool FQbaPhysicsConstraintsTest::RunTestLogic()
 	ADD_LATENT_AUTOMATION_COMMAND(AddNodesToGraph(this));
 	ADD_LATENT_AUTOMATION_COMMAND(FWaitLatentCommand(5.f));
 	ADD_LATENT_AUTOMATION_COMMAND(SaveSpawnedBlueprints(this));
-	ADD_LATENT_AUTOMATION_COMMAND(FWaitLatentCommand(2.f));
+	ADD_LATENT_AUTOMATION_COMMAND(FWaitLatentCommand(12.f));
 	
 	return true;
 }
@@ -115,6 +117,7 @@ bool AddNodesToGraph::Update()
 {
 	FAutomationTestBase& TestRunner = Test->GetTestRunner();
 
+
 	if (!Test->ConstraintActorBlueprint || !Test->EventGraph)
 	{
 		TestRunner.TestNotNull(FString(TEXT("ConstraintActorBlueprint")), Test->ConstraintActorBlueprint);
@@ -131,7 +134,7 @@ bool AddNodesToGraph::Update()
 		return true;
 	}
 
-	UEdGraphPin* const BeginPlayExecPin = BeginPlayNode->FindPin(TEXT("then"));
+	UEdGraphPin* const BeginPlayExecPin = BeginPlayNode->FindPin(UEdGraphSchema_K2::PN_Then);
 	TestRunner.TestNotNull(FString(TEXT("BeginPlay exec pin")), BeginPlayExecPin);
 	if (!BeginPlayExecPin)
 	{
@@ -148,6 +151,54 @@ bool AddNodesToGraph::Update()
 	{
 		return true;
 	}
+
+	const FString StringVariableName = FString(TEXT("ExampleStringVariable"));
+	const FString StringValue = FString(TEXT("Hello, I am your string variable"));
+	QbaBPTestHelpers::AddVariable(StringVariableName, StringValue, Test->ConstraintActorBlueprint, Test->EventGraph);
+
+	if (PrintStringNode)
+	{
+		UEdGraphPin* PrintInString = PrintStringNode->FindPin(TEXT("InString"));
+		TestRunner.TestNotNull(FString(TEXT("PrintInString")), PrintInString);
+
+		if (PrintInString)
+		{
+			const float StringGetXOffset{ -150.f};
+			const float StringGetYOffset{ 100.f };
+			const FVector2D TargetLocation = FVector2D(PrintStringNode->NodePosX + StringGetXOffset, PrintStringNode->NodePosY + StringGetYOffset);
+			UEdGraphNode* const PrintNode =  QbaBPTestHelpers::AddGetSetNode(Test->ConstraintActorBlueprint, Test->EventGraph, StringVariableName, true, TargetLocation);
+			TestRunner.TestNotNull(FString(TEXT("ExampleStringVariable get node")), PrintNode);
+
+			if (PrintNode)
+			{
+				UEdGraphPin* const StringGetPin =  PrintNode->FindPin(StringVariableName);
+				StringGetPin->MakeLinkTo(PrintInString);
+			}
+		}
+	}
+	
+	// Create constraint component, add variables to graph, add pins to graph
+	Test->ContraintComponent = NewObject<UPhysicsConstraintComponent>(Test->ConstraintActorBlueprint);
+	TestRunner.TestNotNull(TEXT("Added constraint component object "), Test->ContraintComponent);
+
+	const FString ContraintNodeName = FString(TEXT("ExampleContraintComponent"));
+	USCS_Node* ConstraintNode = QbaBPTestHelpers::ConstructBPComponent(Test->ConstraintActorBlueprint, Test->ContraintComponent, ContraintNodeName);
+	TestRunner.TestNotNull(TEXT("Added constraint component variable"), ConstraintNode);
+
+	if (Test->ContraintComponent && ConstraintNode && PrintStringNode)
+	{
+		const float ContraintGetXOffset{ 150.f };
+		const float ConstraintGetYOffset{ 100.f };
+		const FVector2D TargetConstraintNodeLocation = FVector2D(PrintStringNode->NodePosX + ContraintGetXOffset, PrintStringNode->NodePosY + ConstraintGetYOffset);
+		UEdGraphNode* const ContraintGetNode = QbaBPTestHelpers::AddGetSetNode(Test->ConstraintActorBlueprint, Test->EventGraph, ContraintNodeName, true, TargetConstraintNodeLocation);
+		TestRunner.TestNotNull(FString(TEXT("Contraint get node")), ContraintGetNode);
+
+		UEdGraphNode* const DuplicatedNode = QbaBPTestHelpers::AddGetSetNode(Test->ConstraintActorBlueprint, Test->EventGraph, ContraintNodeName, true, TargetConstraintNodeLocation + FVector2D(0.f,200.f));
+		TestRunner.TestNotNull(FString(TEXT("DuplicatedNode")), DuplicatedNode);
+		
+		// if constraint node is valid then connect it to anything we want
+	}
+
 
 	return true;
 }

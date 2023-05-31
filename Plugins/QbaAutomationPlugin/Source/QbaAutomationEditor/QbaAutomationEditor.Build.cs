@@ -28,7 +28,8 @@ public class QbaAutomationEditor : ModuleRules
                 "QbaAutomationPlugin",
                 "EditorSubsystem",
 				"UnrealEd",
-                "BlueprintGraph"
+                "BlueprintGraph",
+				"Kismet"
             }
 			);
     }

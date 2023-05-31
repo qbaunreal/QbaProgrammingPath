@@ -7,6 +7,9 @@
 #if WITH_EDITOR
 
 class UEdGraph;
+class UPhysicsConstraintComponent;
+class UStaticMeshComponent;
+
 
 class FQbaPhysicsConstraintsTest : public FQbaTestRunnerBase
 {
@@ -16,6 +19,13 @@ public:
 	
 	UEdGraph* EventGraph{ nullptr };
 	UBlueprint* ConstraintActorBlueprint{ nullptr };
+	UPhysicsConstraintComponent* ContraintComponent{ nullptr };
+	UStaticMeshComponent* MeshComponent1{ nullptr };
+	UStaticMeshComponent* MeshComponent2{ nullptr };
+
+	// Switches used to determine if should process to next step
+	bool bAddedNodesToGraph{ false };
+	bool bAddedActorToMap{ false };
 };
 
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(SpawnConstraintActorBlueprint, FQbaPhysicsConstraintsTest*, Test);

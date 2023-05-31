@@ -19,6 +19,12 @@
 #include "Subsystems/AssetEditorSubsystem.h"
 #include "Editor.h"
 #include "EdGraphSchema_K2.h"
+#include "K2Node_VariableGet.h"
+#include "K2Node_VariableSet.h"
+#include "ComponentAssetBroker.h"
+#include "Engine/SimpleConstructionScript.h"
+#include "Engine/SCS_Node.h"
+
 
 namespace QbaBPTestHelpers
 {
@@ -58,7 +64,7 @@ namespace QbaBPTestHelpers
 
 	static UEdGraphNode* AddPrintStringNode(UBlueprint* InBlueprint, UEdGraph* InGraph, const FVector2D& InGraphLocation, UEdGraphPin* ConnectPin = NULL)
 	{
-		/*UEdGraph* TempOuter = NewObject<UEdGraph>(static_cast<UObject*>(InBlueprint));*/
+		InGraph->Modify();
 		UEdGraph* TempOuter = NewObject<UEdGraph>(InBlueprint);
 		TempOuter->SetFlags(RF_Transient);
 
@@ -84,6 +90,76 @@ namespace QbaBPTestHelpers
 
 		GUnrealEd->RequestPlaySession(SessionParams);
 	}
+
+	static bool AddVariable(const FString& Name, const FString& Value, UBlueprint* InBlueprint, UEdGraph* InGraph, const FName Type = UEdGraphSchema_K2::PC_String)
+	{
+		const FName VariableName = FName(*Name);
+		const FEdGraphPinType PinType(Type, NAME_None, nullptr, EPinContainerType::None, false, FEdGraphTerminalType());
+		return FBlueprintEditorUtils::AddMemberVariable(InBlueprint, VariableName, PinType, Value);
+	}
+
+	static bool AddArray(const FString& Name, const FString& Value, UBlueprint* InBlueprint, UEdGraph* InGraph, const FName Type = UEdGraphSchema_K2::PC_String)
+	{
+		const FName VariableName = FName(*Name);
+		const FEdGraphPinType PinType(Type, NAME_None, nullptr, EPinContainerType::Array, false, FEdGraphTerminalType());
+		return FBlueprintEditorUtils::AddMemberVariable(InBlueprint, VariableName, PinType, Value);
+	}
+
+	static UEdGraphNode* AddGetSetNode(UBlueprint* InBlueprint, UEdGraph* InGraph, const FString& VarName, bool bGet, const FVector2D& Location)
+	{
+		InGraph->Modify();
+
+		FEdGraphSchemaAction_K2NewNode NodeInfo;
+		UK2Node_Variable* TemplateNode = NULL;
+		if (bGet)
+		{
+			TemplateNode = NewObject<UK2Node_VariableGet>(InBlueprint);
+		}
+		else
+		{
+			TemplateNode = NewObject<UK2Node_VariableSet>(InBlueprint);
+		}
+
+		TemplateNode->VariableReference.SetSelfMember(FName(*VarName));
+		NodeInfo.NodeTemplate = TemplateNode;
+
+		return NodeInfo.PerformAction(InGraph, NULL, Location, true);
+	}
+	
+
+	static void SetPinValue(UEdGraphNode* Node, const FName& PinName, const FString& PinValue)
+	{
+		UEdGraphPin* Pin = Node->FindPin(PinName);
+		Pin->DefaultValue = PinValue;
+	}
+
+
+	static USCS_Node* ConstructBPComponent(UBlueprint* InBlueprint, UObject* InAsset, const FString& NodeName)
+	{
+		IAssetEditorInstance* OpenedEditor = GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->FindEditorForAsset(InBlueprint, true);
+		FBlueprintEditor* BlueprintEditor = static_cast<FBlueprintEditor*>(OpenedEditor);
+
+		USCS_Node* NewNode = InBlueprint->SimpleConstructionScript->CreateNode(InAsset->GetClass(), FName(NodeName));
+		FComponentAssetBrokerage::AssignAssetToComponent(NewNode->ComponentTemplate, InAsset);
+
+		TArray<USCS_Node*> AllNodes = InBlueprint->SimpleConstructionScript->GetAllNodes();
+		USCS_Node* RootNode = AllNodes.Num() > 0 ? AllNodes[0] : NULL;
+
+		if (!RootNode || (RootNode == InBlueprint->SimpleConstructionScript->GetDefaultSceneRootNode()))
+		{
+			InBlueprint->SimpleConstructionScript->AddNode(NewNode);
+		}
+		else
+		{
+			RootNode->AddChildNode(NewNode);
+		}
+
+		FKismetEditorUtilities::GenerateBlueprintSkeleton(InBlueprint, true);
+		BlueprintEditor->UpdateSubobjectPreview(true);
+
+		return NewNode;
+	}
+
 }
 
 #endif // WITH_EDITOR
