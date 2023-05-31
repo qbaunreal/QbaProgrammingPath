@@ -117,7 +117,6 @@ bool AddNodesToGraph::Update()
 {
 	FAutomationTestBase& TestRunner = Test->GetTestRunner();
 
-
 	if (!Test->ConstraintActorBlueprint || !Test->EventGraph)
 	{
 		TestRunner.TestNotNull(FString(TEXT("ConstraintActorBlueprint")), Test->ConstraintActorBlueprint);
@@ -163,8 +162,8 @@ bool AddNodesToGraph::Update()
 
 		if (PrintInString)
 		{
-			const float StringGetXOffset{ -150.f};
-			const float StringGetYOffset{ 100.f };
+			const float StringGetXOffset{ 0.f};
+			const float StringGetYOffset{ -20.f };
 			const FVector2D TargetLocation = FVector2D(PrintStringNode->NodePosX + StringGetXOffset, PrintStringNode->NodePosY + StringGetYOffset);
 			UEdGraphNode* const PrintNode =  QbaBPTestHelpers::AddGetSetNode(Test->ConstraintActorBlueprint, Test->EventGraph, StringVariableName, true, TargetLocation);
 			TestRunner.TestNotNull(FString(TEXT("ExampleStringVariable get node")), PrintNode);
@@ -176,8 +175,14 @@ bool AddNodesToGraph::Update()
 			}
 		}
 	}
+	else
+	{
+		return true;
+	}
+
+	UEdGraphPin* PrintStringThenPin = PrintStringNode->FindPin(UEdGraphSchema_K2::PN_Then);
 	
-	// Create constraint component, add variables to graph, add pins to graph
+	// Create constraint component
 	Test->ContraintComponent = NewObject<UPhysicsConstraintComponent>(Test->ConstraintActorBlueprint);
 	TestRunner.TestNotNull(TEXT("Added constraint component object "), Test->ContraintComponent);
 
@@ -185,19 +190,82 @@ bool AddNodesToGraph::Update()
 	USCS_Node* ConstraintNode = QbaBPTestHelpers::ConstructBPComponent(Test->ConstraintActorBlueprint, Test->ContraintComponent, ContraintNodeName);
 	TestRunner.TestNotNull(TEXT("Added constraint component variable"), ConstraintNode);
 
-	if (Test->ContraintComponent && ConstraintNode && PrintStringNode)
+	if (!Test->ContraintComponent || !ConstraintNode || !PrintStringNode || !PrintStringThenPin)
 	{
-		const float ContraintGetXOffset{ 150.f };
-		const float ConstraintGetYOffset{ 100.f };
-		const FVector2D TargetConstraintNodeLocation = FVector2D(PrintStringNode->NodePosX + ContraintGetXOffset, PrintStringNode->NodePosY + ConstraintGetYOffset);
-		UEdGraphNode* const ContraintGetNode = QbaBPTestHelpers::AddGetSetNode(Test->ConstraintActorBlueprint, Test->EventGraph, ContraintNodeName, true, TargetConstraintNodeLocation);
-		TestRunner.TestNotNull(FString(TEXT("Contraint get node")), ContraintGetNode);
-
-		UEdGraphNode* const DuplicatedNode = QbaBPTestHelpers::AddGetSetNode(Test->ConstraintActorBlueprint, Test->EventGraph, ContraintNodeName, true, TargetConstraintNodeLocation + FVector2D(0.f,200.f));
-		TestRunner.TestNotNull(FString(TEXT("DuplicatedNode")), DuplicatedNode);
-		
-		// if constraint node is valid then connect it to anything we want
+		return true;
 	}
+
+	//Create static meshes
+	Test->MeshComponent1 = NewObject<UStaticMeshComponent>(Test->ConstraintActorBlueprint);
+	TestRunner.TestNotNull(TEXT("Adding mesh component 1"), Test->MeshComponent1);
+	const FString MeshComponent1NodeName = FString(TEXT("MeshComponent1"));
+	USCS_Node* MeshComponent1Node = QbaBPTestHelpers::ConstructBPComponent(Test->ConstraintActorBlueprint, Test->MeshComponent1, MeshComponent1NodeName);
+	TestRunner.TestNotNull(TEXT("Adding mesh component 1 node "), MeshComponent1Node);
+
+	Test->MeshComponent2 = NewObject<UStaticMeshComponent>(Test->ConstraintActorBlueprint);
+	const FString MeshComponent2NodeName = FString(TEXT("MeshComponent2"));
+	USCS_Node* MeshComponent2Node = QbaBPTestHelpers::ConstructBPComponent(Test->ConstraintActorBlueprint, Test->MeshComponent2, MeshComponent2NodeName);
+	TestRunner.TestNotNull(TEXT("Adding mesh component 2 node "), MeshComponent2Node);
+
+	if (!Test->MeshComponent1 || !Test->MeshComponent2)
+	{
+		return true;
+	}
+
+	//TODO: assign valid meshes to them
+	
+
+	//Setup constraint 
+	const float SetConstrainedXOffset{ 200.f };
+	const float SetConstrainedYOffset{ -20.f };
+	const FVector2D SetConstrainedNodeLocation = FVector2D(PrintStringNode->NodePosX + NodeXOffset, PrintStringNode->NodePosY + NodeYOffset);
+	UEdGraphNode* SetConstrainedNode = QbaBPTestHelpers::AddNode<UPhysicsConstraintComponent>(Test->ConstraintActorBlueprint, Test->EventGraph, SetConstrainedNodeLocation, TEXT("SetConstrainedComponents"), PrintStringThenPin);
+	TestRunner.TestNotNull(FString(TEXT("SetConstrainedNode")), SetConstrainedNode);
+
+	
+	const float ContraintGetXOffset{ 0.f };
+	const float ConstraintGetYOffset{ -20.f };
+	const FVector2D TargetConstraintNodeLocation = FVector2D(SetConstrainedNode->NodePosX + ContraintGetXOffset, SetConstrainedNode->NodePosY + ConstraintGetYOffset);
+	UEdGraphNode* const ContraintGetNode = QbaBPTestHelpers::AddGetSetNode(Test->ConstraintActorBlueprint, Test->EventGraph, ContraintNodeName, true, TargetConstraintNodeLocation);
+	TestRunner.TestNotNull(FString(TEXT("Contraint get node")), ContraintGetNode);
+
+	const float Mesh1GetXOffset{ 0.f };
+	const float Mesh1GetYOffset{ -60.f };
+	const FVector2D Mesh1GetNodeLocation = FVector2D(SetConstrainedNode->NodePosX + Mesh1GetXOffset, SetConstrainedNode->NodePosY + Mesh1GetYOffset);
+	UEdGraphNode* const Mesh1GetNode = QbaBPTestHelpers::AddGetSetNode(Test->ConstraintActorBlueprint, Test->EventGraph, MeshComponent1NodeName, true, Mesh1GetNodeLocation);
+	TestRunner.TestNotNull(FString(TEXT("Mesh1GetNode")), Mesh1GetNode);
+
+	const float Mesh2GetXOffset{ 0.f };
+	const float Mesh2GetYOffset{ -100.f };
+	const FVector2D Mesh2GetNodeLocation = FVector2D(SetConstrainedNode->NodePosX + Mesh2GetXOffset, SetConstrainedNode->NodePosY + Mesh2GetYOffset);
+	UEdGraphNode* const Mesh2GetNode = QbaBPTestHelpers::AddGetSetNode(Test->ConstraintActorBlueprint, Test->EventGraph, MeshComponent2NodeName, true, Mesh2GetNodeLocation);
+	TestRunner.TestNotNull(FString(TEXT("Mesh2GetNode")), Mesh2GetNode);
+
+
+	if (!ContraintGetNode || !SetConstrainedNode)
+	{
+		return true;
+	}
+
+	UEdGraphPin* const GetConstraintPin = ContraintGetNode->FindPin(ContraintNodeName);
+	UEdGraphPin* const GetMesh1Pin = Mesh1GetNode->FindPin(MeshComponent1NodeName);
+	UEdGraphPin* const GetMesh2Pin = Mesh2GetNode->FindPin(MeshComponent2NodeName);
+	UEdGraphPin* const InConstraintPin = SetConstrainedNode->FindPin(UEdGraphSchema_K2::PN_Self);
+	UEdGraphPin* const InMesh1Pin = SetConstrainedNode->FindPin(TEXT("Component1"));
+	UEdGraphPin* const InMesh2Pin = SetConstrainedNode->FindPin(TEXT("Component2"));
+
+	const bool bHasAllValidPins = GetConstraintPin && GetMesh1Pin && GetMesh2Pin && InConstraintPin && InMesh1Pin && InMesh2Pin;
+	TestRunner.TestTrue(FString(TEXT("bHasAllValidPins")), bHasAllValidPins);
+
+	if (!bHasAllValidPins)
+	{
+		return true;
+	}
+
+
+	GetConstraintPin->MakeLinkTo(InConstraintPin);
+	GetMesh1Pin->MakeLinkTo(InMesh1Pin);
+	GetMesh2Pin->MakeLinkTo(InMesh2Pin);
 
 
 	return true;

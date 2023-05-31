@@ -44,12 +44,13 @@ namespace QbaBPTestHelpers
 		}
 		return nullptr;
 	}
-	static UK2Node* CreateKismetTemplateFunction(UObject* NodeOuter, const FName& FunctionName)
+	template<typename OwnerClass = UKismetSystemLibrary>
+	static UK2Node* CreateTemplateFunction(UObject* NodeOuter, const FName& FunctionName)
 	{
 		// Make a call function template
 		UK2Node_CallFunction* CallFuncNode = NewObject<UK2Node_CallFunction>(NodeOuter);
 
-		UFunction* Function = FindFieldChecked<UFunction>(UKismetSystemLibrary::StaticClass(), FunctionName);
+		UFunction* Function = FindFieldChecked<UFunction>(OwnerClass::StaticClass(), FunctionName);
 		CallFuncNode->FunctionReference.SetFromField<UFunction>(Function, false);
 		return CallFuncNode;
 	}
@@ -59,23 +60,28 @@ namespace QbaBPTestHelpers
 		TSharedPtr<FEdGraphSchemaAction_K2NewNode> Action = TSharedPtr<FEdGraphSchemaAction_K2NewNode>(new FEdGraphSchemaAction_K2NewNode(FText::GetEmpty(), FText::GetEmpty(), FText::GetEmpty(), 0));
 		Action->NodeTemplate = NodeTemplate;
 
-		return Action->PerformAction(InGraph, ConnectPin, GraphLocation, false);
+		return Action->PerformAction(InGraph, ConnectPin, GraphLocation, true);
 	}
 
-	static UEdGraphNode* AddPrintStringNode(UBlueprint* InBlueprint, UEdGraph* InGraph, const FVector2D& InGraphLocation, UEdGraphPin* ConnectPin = NULL)
+	template <typename FunctionClass = UKismetSystemLibrary>
+	static UEdGraphNode* AddNode(UBlueprint* InBlueprint, UEdGraph* InGraph, const FVector2D& InGraphLocation, const FName NodeFunctionName, UEdGraphPin* ConnectPin = NULL)
 	{
 		InGraph->Modify();
 		UEdGraph* TempOuter = NewObject<UEdGraph>(InBlueprint);
 		TempOuter->SetFlags(RF_Transient);
 
 		// Make a call function template
-		const FName PrintStringFunctionName(TEXT("PrintString"));
-		UK2Node* CallFuncNode = CreateKismetTemplateFunction(TempOuter, PrintStringFunctionName);
+		UK2Node* CallFuncNode = CreateTemplateFunction<FunctionClass>(TempOuter, NodeFunctionName);
 
 		return CreateNewNodeFromTemplate(CallFuncNode, InGraph, InGraphLocation, ConnectPin);
 	}
 
+	static UEdGraphNode* AddPrintStringNode(UBlueprint* InBlueprint, UEdGraph* InGraph, const FVector2D& InGraphLocation, UEdGraphPin* ConnectPin = NULL)
+	{
+		return AddNode(InBlueprint, InGraph, InGraphLocation,TEXT("PrintString"), ConnectPin);
+	}
 
+	
 	static void StartPIE(bool bSimulateInEditor)
 	{
 		FLevelEditorModule& LevelEditorModule = FModuleManager::Get().GetModuleChecked<FLevelEditorModule>(TEXT("LevelEditor"));
