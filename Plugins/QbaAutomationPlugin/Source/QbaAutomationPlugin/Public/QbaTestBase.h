@@ -16,6 +16,7 @@
 #include "ActorFactories/ActorFactory.h"
 #include "Editor/UnrealEdEngine.h"
 #include "Factories/Factory.h"
+#include "Subsystems/AssetEditorSubsystem.h"
 #include "Kismet2/KismetEditorUtilities.h"
 #include "ObjectTools.h"
 #include "PackageTools.h"
@@ -29,7 +30,6 @@
 DECLARE_LOG_CATEGORY_EXTERN(LogQbaAutomation, Log, All);
 DEFINE_LOG_CATEGORY(LogQbaAutomation);
 
-// NOTE: The idea/shape of this base was originating from AITestsCommon.h + EditorAssetAutomationTests.cpp to not reinvent the wheel
 
 PRAGMA_DISABLE_OPTIMIZATION
 namespace QBATESTS_API FQbaTestHelpers
@@ -75,7 +75,7 @@ namespace QBATESTS_API FQbaTestHelpers
 	};
 
 	/* Factory isn't necessary when calling CreateBlueprint function */
-	static TObjectPtr<UObject> CreateBlueprint(const FAssetCreationData& AssetCreationData, UPackage*& OutPackage)
+	static UBlueprint* CreateBlueprint(const FAssetCreationData& AssetCreationData, UPackage*& OutPackage)
 	{
 #if WITH_EDITOR
 		if (!AssetCreationData.AssetClass)
@@ -150,10 +150,9 @@ namespace QBATESTS_API FQbaTestHelpers
 #if WITH_EDITOR
 		if (AssetToDelete)
 		{
-			bool bSuccessfulDelete = false;
-
+			GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->CloseAllAssetEditors();
 			FAutomationEditorCommonUtils::NullReferencesToObject(AssetToDelete);
-			bSuccessfulDelete = ObjectTools::DeleteSingleObject(AssetToDelete, false);
+			const bool bSuccessfulDelete = ObjectTools::DeleteSingleObject(AssetToDelete, false);
 
 			if (bSuccessfulDelete)
 			{
@@ -273,13 +272,28 @@ public:
 	virtual ~FQbaTestBase() {};
 
 	// Check if initialized properly, loading environment, required assets etc.
-	virtual bool PrepareTest() { FQbaTestHelpers::DeleteTestDirectory(); return true; }
+	virtual bool PrepareTest() 
+	{
+		UE_LOG(LogQbaAutomation, Log, TEXT("Preparing the test..."));
+		FQbaTestHelpers::DeleteTestDirectory();
+		return true;
+	};
 
 	// Run logic of your test here 
-	virtual bool RunTestLogic() { return true; }
+	virtual bool RunTestLogic() 
+	{
+		UE_LOG(LogQbaAutomation, Log, TEXT("Running test logic..."));
+		return true;
+	};
 
 	// Delete all necessary assets, finish test logic
-	virtual bool FinishTest() {  DeleteAllTestAssets(); return true; }
+	virtual bool FinishTest() 
+	{
+		UE_LOG(LogQbaAutomation, Log, TEXT("Finishing the test..."));
+		const bool bDeletedAllAssets = DeleteAllTestAssets();
+		GetTestRunner().TestTrue(FString(TEXT("DeleteAllTestAssets")), bDeletedAllAssets);
+		return true;
+	};
 
 
 };

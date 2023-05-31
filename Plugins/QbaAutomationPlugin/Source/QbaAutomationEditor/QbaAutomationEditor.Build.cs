@@ -27,7 +27,8 @@ public class QbaAutomationEditor : ModuleRules
 				"SlateCore",
                 "QbaAutomationPlugin",
                 "EditorSubsystem",
-				"UnrealEd"
+				"UnrealEd",
+                "BlueprintGraph"
             }
 			);
     }

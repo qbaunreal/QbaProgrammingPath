@@ -4,19 +4,23 @@
 
 #include "QbaTestBase.h"
 
+#if WITH_EDITOR
+
+class UEdGraph;
+
 class FQbaPhysicsConstraintsTest : public FQbaTestRunnerBase
 {
 public:
-	// Check if initialized properly, loading environment, required assets etc.
-	virtual bool PrepareTest() override;
-
-	// Run logic of your test here 
 	virtual bool RunTestLogic() override;
 
-	// Delete all necessary assets, finish test logic
-	virtual bool FinishTest() override;
+	
+	UEdGraph* EventGraph{ nullptr };
+	UBlueprint* ConstraintActorBlueprint{ nullptr };
 };
 
-DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(SpawnTestBlueprints, FQbaPhysicsConstraintsTest*, Test);
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(SpawnConstraintActorBlueprint, FQbaPhysicsConstraintsTest*, Test);
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(OpenBlueprintGraph, FQbaPhysicsConstraintsTest*, Test);
+DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(AddNodesToGraph, FQbaPhysicsConstraintsTest*, Test);
 DEFINE_LATENT_AUTOMATION_COMMAND_ONE_PARAMETER(SaveSpawnedBlueprints, FQbaPhysicsConstraintsTest*, Test);
 
+#endif // WITH_EDITOR
