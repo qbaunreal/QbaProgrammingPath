@@ -41,7 +41,8 @@ namespace QbaBPTestHelpers
 	static UK2Node* CreateKismetTemplateFunction(UObject* NodeOuter, const FName& FunctionName)
 	{
 		// Make a call function template
-		UK2Node_CallFunction* CallFuncNode = NewObject<UK2Node_CallFunction>(NodeOuter->GetPackage());
+		UK2Node_CallFunction* CallFuncNode = NewObject<UK2Node_CallFunction>(NodeOuter);
+
 		UFunction* Function = FindFieldChecked<UFunction>(UKismetSystemLibrary::StaticClass(), FunctionName);
 		CallFuncNode->FunctionReference.SetFromField<UFunction>(Function, false);
 		return CallFuncNode;
@@ -58,7 +59,7 @@ namespace QbaBPTestHelpers
 	static UEdGraphNode* AddPrintStringNode(UBlueprint* InBlueprint, UEdGraph* InGraph, const FVector2D& InGraphLocation, UEdGraphPin* ConnectPin = NULL)
 	{
 		/*UEdGraph* TempOuter = NewObject<UEdGraph>(static_cast<UObject*>(InBlueprint));*/
-		UEdGraph* TempOuter = NewObject<UEdGraph>(InBlueprint->GetPackage());
+		UEdGraph* TempOuter = NewObject<UEdGraph>(InBlueprint);
 		TempOuter->SetFlags(RF_Transient);
 
 		// Make a call function template

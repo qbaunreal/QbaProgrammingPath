@@ -40,7 +40,7 @@ bool FQbaPhysicsConstraintsTest::RunTestLogic()
 	ADD_LATENT_AUTOMATION_COMMAND(OpenBlueprintGraph(this));
 	ADD_LATENT_AUTOMATION_COMMAND(FWaitLatentCommand(2.f));
 	ADD_LATENT_AUTOMATION_COMMAND(AddNodesToGraph(this));
-	ADD_LATENT_AUTOMATION_COMMAND(FWaitLatentCommand(10.f));
+	ADD_LATENT_AUTOMATION_COMMAND(FWaitLatentCommand(5.f));
 	ADD_LATENT_AUTOMATION_COMMAND(SaveSpawnedBlueprints(this));
 	ADD_LATENT_AUTOMATION_COMMAND(FWaitLatentCommand(2.f));
 	
@@ -138,7 +138,7 @@ bool AddNodesToGraph::Update()
 		return true;
 	}
 
-	// Spawn PrintString node for debugging purpouse
+	// Spawn PrintString node for debugging purpose
 	const float NodeXOffset{ 200.f };
 	const float NodeYOffset{ 10.f };
 	const FVector2D PrintNodeLocation = FVector2D(BeginPlayNode->NodePosX + NodeXOffset, BeginPlayNode->NodePosY + NodeYOffset);

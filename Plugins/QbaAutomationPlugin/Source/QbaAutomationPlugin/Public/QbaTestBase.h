@@ -51,8 +51,10 @@ namespace QBATESTS_API FQbaTestHelpers
 			UE_LOG(LogQbaAutomation, Error, TEXT("Provided null class or factory for asset creation, aborting asset creation."));
 			return nullptr;
 		}
-		const FString PackageName = AssetCreationData.AssetPath + TEXT("/") + AssetCreationData.AssetName;
-		OutPackage = CreatePackage(*PackageName);
+		const FName UniquePackageName = MakeUniqueObjectName(OutPackage, UPackage::StaticClass(), FName(*AssetCreationData.AssetName));
+		const FString FullPackageName = AssetCreationData.AssetPath + TEXT("/") + UniquePackageName.ToString();
+
+		OutPackage = CreatePackage(*FullPackageName);
 		EObjectFlags Flags = RF_Public | RF_Standalone;
 		
 		TObjectPtr<UObject> CreatedAsset = AssetCreationData.Factory->FactoryCreateNew(AssetCreationData.AssetClass, OutPackage, FName(*AssetCreationData.AssetName), Flags, NULL, GWarn);
@@ -82,12 +84,22 @@ namespace QBATESTS_API FQbaTestHelpers
 		{
 			UE_LOG(LogQbaAutomation, Error, TEXT("Provided null class for blueprint creation, aborting blueprint creation."));
 		}
-		const FString PackageName = AssetCreationData.AssetPath + TEXT("/") + AssetCreationData.AssetName;
-		OutPackage = CreatePackage(*PackageName);
+		const FName UniquePackageName = MakeUniqueObjectName(OutPackage, UPackage::StaticClass(), FName(*AssetCreationData.AssetName));
+		const FString FullPackageName = AssetCreationData.AssetPath + TEXT("/") + UniquePackageName.ToString();
+
+		OutPackage = CreatePackage(*FullPackageName);
 
 		if (OutPackage)
 		{
 			const FName BlueprintName = MakeUniqueObjectName(OutPackage, AssetCreationData.AssetClass, FName(*AssetCreationData.AssetName));
+			
+			UObject* ExistingBlueprint = FindObject<UBlueprint>(OutPackage, *AssetCreationData.AssetName);
+		
+			if (ExistingBlueprint)
+			{
+				UE_LOG(LogQbaAutomation, Error, TEXT("Cannot create new blueprint, old one still exists"), ExistingBlueprint);
+				return false;
+			}
 
 			UBlueprint* CreatedBlueprint = FKismetEditorUtilities::CreateBlueprint(AssetCreationData.AssetClass, OutPackage, BlueprintName, BPTYPE_Normal, UBlueprint::StaticClass(), UBlueprintGeneratedClass::StaticClass());
 			if (CreatedBlueprint)
@@ -116,6 +128,10 @@ namespace QBATESTS_API FQbaTestHelpers
 		if (AssetToSave)
 		{
 			UPackage* Package = AssetToSave->GetPackage();
+
+			Package->SetDirtyFlag(true);
+			Package->FullyLoad();
+
 			if (Package)
 			{
 				const FString PackageName = Package->GetName();
@@ -124,7 +140,7 @@ namespace QBATESTS_API FQbaTestHelpers
 				FSavePackageArgs SaveArgs;
 				{
 					SaveArgs.TopLevelFlags = RF_Public | RF_Standalone;
-					SaveArgs.SaveFlags = SAVE_NoError;
+					SaveArgs.Error = GWarn;
 				}
 
 				const bool bSucceeded = UPackage::SavePackage(Package, nullptr, *PackageFileName, SaveArgs);
@@ -151,30 +167,26 @@ namespace QBATESTS_API FQbaTestHelpers
 		if (AssetToDelete)
 		{
 			GEditor->GetEditorSubsystem<UAssetEditorSubsystem>()->CloseAllAssetEditors();
+
+			UPackage* Package = AssetToDelete->GetPackage();
+
 			FAutomationEditorCommonUtils::NullReferencesToObject(AssetToDelete);
-			const bool bSuccessfulDelete = ObjectTools::DeleteSingleObject(AssetToDelete, false);
-
-			if (bSuccessfulDelete)
+			ObjectTools::DeleteSingleObject(AssetToDelete, false);
+			
+			FString PackageFilename;
+			if (FPackageName::DoesPackageExist(Package->GetName(), &PackageFilename))
 			{
-				UPackage* Package = AssetToDelete->GetPackage();
-				FString PackageFilename;
-				if (FPackageName::DoesPackageExist(Package->GetName(), &PackageFilename))
-				{
-					TArray<UPackage*> PackagesToDelete;
-					PackagesToDelete.Add(Package);
+				TArray<UPackage*> PackagesToDelete;
+				PackagesToDelete.Add(Package);
 
-					Package->SetDirtyFlag(false);
-					UPackageTools::UnloadPackages(PackagesToDelete);
+				Package->SetDirtyFlag(false);
+				UPackageTools::UnloadPackages(PackagesToDelete);
 
-					IFileManager::Get().Delete(*PackageFilename);
-					UE_LOG(LogQbaAutomation, VeryVerbose, TEXT("Succesfully deleted asset"));
-					return true;
-				}
-			}
-			else
-			{
-				UE_LOG(LogQbaAutomation, Error, TEXT("Cannot delete: %s"), *AssetToDelete->GetName());
-				return false;
+				ObjectTools::DeleteSingleObject(Package, false);
+				IFileManager::Get().Delete(*PackageFilename);
+				UE_LOG(LogQbaAutomation, VeryVerbose, TEXT("Succesfully deleted asset"));
+				CollectGarbage(GARBAGE_COLLECTION_KEEPFLAGS);
+				return true;
 			}
 		}
 #else
